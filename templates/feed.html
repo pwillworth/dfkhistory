@@ -1,0 +1,780 @@
+<html lang="en">
+<head>
+  <title>Player History</title>
+  <meta property="og:title" content="Player History">
+  <meta property="og:description" content="Event history for the DFK Player {{ playerid }}.">
+  <link rel="shortcut icon" href="/static/images/favicon.png" />
+  <meta property="og:image" content="/static/images/favicon.png">
+  <link rel="stylesheet" type="text/css" href="/static/herohistory.css" media="screen" />
+  <script src="/static/herohistory.js" type="text/javascript"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.7.4-rc.1/web3.min.js"></script>
+</head>
+<body>
+<script>
+var playerId = '{{ playerId }}';
+var playerName = 'unknown';
+var showReady = true;
+var dataLoaded = {
+  'events': -1,
+  'levels': -1,
+  'sales': -1,
+  'summons': -1,
+  'purchases': -1,
+  'hatches': -1
+};
+var dataPosition = {
+  'events': 0,
+  'levels': 0,
+  'sales': 0,
+  'summons': 0,
+  'purchases': 0,
+  'hatches': 0
+};
+var dataLimits = {
+  'events': -1,
+  'levels': -1,
+  'sales': -1,
+  'summons': -1,
+  'purchases': -1,
+  'hatches': -1
+};
+var dataEnded = {
+  'events': -1,
+  'levels': -1,
+  'sales': -1,
+  'summons': -1,
+  'purchases': -1,
+  'hatches': -1
+};
+var dataRows = {
+  'events': [],
+  'levels': [],
+  'sales': [],
+  'summons': [],
+  'purchases': [],
+  'hatches': []
+};
+window.onload = (event) => {
+  whoDis('{{ playerId }}', new Event('load'));
+  sid = getCookie('sid', '');
+  isConnected();
+  window.web3 = new Web3(window.ethereum);
+  loadAll();
+};
+window.onscroll = function(ev) {
+    if ((window.innerHeight + Math.round(window.scrollY)) >= document.body.offsetHeight) {
+        // you're at the bottom of the page
+        if (dataEnded['events'] + dataEnded['levels'] + dataEnded['sales'] + dataEnded['summons'] + dataEnded['purchases'] + dataEnded['hatches'] != 6) {
+          showMore(true);
+        } else {
+            eh = document.getElementById('endMessage');
+            eh.style.display = 'block';
+        }
+    }
+};
+window.ethereum.on('accountsChanged', function (accounts) {
+  //window.location.reload();
+});
+ethereum.on('chainChanged', (chainId) => {
+  //window.location.reload();
+});
+function loadAll() {
+  var waitElm = document.getElementById('medBusyWait');
+  waitElm.style.display = 'block';
+  if (dataPosition['levels'] >= dataRows['levels'].length-1 && dataEnded['levels'] == -1) {
+    loadLevelUps();
+  }
+  if (dataPosition['events'] >= dataRows['events'].length-1 && dataEnded['events'] == -1) {
+    loadLifeEvents();
+  }
+  if (dataPosition['sales'] >= dataRows['sales'].length-1 && dataEnded['sales'] == -1) {
+    loadSales();
+  }
+  if (dataPosition['summons'] >= dataRows['summons'].length-1 && dataEnded['summons'] == -1) {
+    loadSummons();
+  }
+  if (dataPosition['purchases'] >= dataRows['purchases'].length-1 && dataEnded['purchases'] == -1) {
+    loadPurchases();
+  }
+  if (dataPosition['hatches'] >= dataRows['hatches'].length-1 && dataEnded['hatches'] == -1) {
+    loadHatches();
+  }
+}
+function loadMore(eType) {
+    var waitElm = document.getElementById('medBusyWait');
+    waitElm.style.display = 'block';
+    switch (eType) {
+      case 'events':
+        loadLifeEvents();
+        break;
+      case 'levels':
+        loadLevelUps();
+        break;
+      case 'sales':
+        loadSales();
+        break;
+      case 'summons':
+        loadSummons();
+        break;
+      case 'purchases':
+        loadPurchases();
+        break;
+      case 'hatches':
+        loadHatches();
+        break;
+      default:
+        console.log('invalid data type');
+    }
+}
+function loadData() {
+  // first check if we need to fetch more data for any type
+  ['events','levels','sales','summons','purchases','hatches'].some((eType) => {
+    if (dataRows[eType].length - dataPosition[eType] < 10 && dataEnded[eType] == -1) {
+        loadMore(eType);
+        return [eType, -1];
+    }
+  });
+}
+function getNewestItem() {
+  maxTimestamp = 0;
+  maxIndex = 0;
+  maxType = '';
+  // determine which of the types has the most recent timestamp for data and return its index
+  ['events','levels','sales','summons','purchases','hatches'].some((eType) => {
+    if (eType == 'levels') {
+        tsPos = 8;
+    } else {
+        tsPos = 4;
+    }
+    if (dataRows[eType].length > dataPosition[eType] && dataEnded[eType] == -1 && dataRows[eType][dataPosition[eType]][tsPos] > maxTimestamp) {
+        maxTimestamp = dataRows[eType][dataPosition[eType]][tsPos];
+        maxIndex = dataPosition[eType];
+        maxType = eType;
+    }
+  });
+  if (maxTimestamp > 0) {
+    dataPosition[maxType]++;
+  }
+  return [maxType, maxIndex];
+}
+function showMore(setReady=false) {
+  showReady = setReady;
+  loadData();
+  var waitElm = document.getElementById('medBusyWait');
+  waitElm.style.display = 'block';
+  for (let x=0;x<10;x++) {
+    var newest = getNewestItem();
+    // bail if we had to fetch more data so we can wait for async return
+    if (newest[1] == -1 || newest[0] == '') {
+        break;
+    }
+    switch (newest[0]) {
+      case 'events':
+        row = lifeEventsRow(dataRows['events'][newest[1]]);
+        break;
+      case 'levels':
+        row = meditationsRow(dataRows['levels'][newest[1]]);
+        break;
+      case 'sales':
+        row = salesRow(dataRows['sales'][newest[1]]);
+        break;
+      case 'summons':
+        row = summonsRow(dataRows['summons'][newest[1]]);
+        break;
+      case 'purchases':
+        row = purchasesRow(dataRows['purchases'][newest[1]]);
+        break;
+      case 'hatches':
+        row = hatchesRow(dataRows['hatches'][newest[1]]);
+        break;
+      default:
+        row = document.createElement('tr');
+        row.innerHTML = '<td>Error</td>';
+        console.log('invalid data type');
+    }
+    var listElm = document.getElementById('feedList');
+    listElm.appendChild(row);
+  }
+  var waitElm = document.getElementById('medBusyWait');
+  waitElm.style.display = 'none';
+}
+function loadLevelUps() {
+  var waitElm = document.getElementById('medBusyWait');
+  waitElm.style.display = 'block';
+  // lookup player level up history
+  if (dataLimits['levels'] > -1) {
+    limitOpt = `?limit=${dataLimits['levels']}`;
+  } else {
+    limitOpt = '';
+  }
+  var request = new XMLHttpRequest();
+  request.open('POST', `/player/${playerId}/history/levelup${limitOpt}`, true);
+  request.onload = function() {
+    if (!request.status || (request.status >= 400)) {
+      alert('Failed to load meditations.');
+    } else {
+      var resp = JSON.parse(request.responseText);
+      if ('error' in resp) {
+        document.getElementById('levelsList').innerHTML = resp['error'];
+      } else {
+        resultCount = resp['results'].length;
+        if (resultCount > 0) {
+          dataLimits['levels'] = resp['results'][resp['results'].length-1][8]
+          dataRows['levels'].push(...Array.from(resp['results']));
+        } else {
+          dataEnded['levels'] = 1;
+        }
+      }
+      dataLoaded['levels'] = 0;
+      if (dataLoaded['levels']+dataLoaded['events']+dataLoaded['sales']+dataLoaded['summons']+dataLoaded['purchases']==0 && showReady) {
+        showMore();
+      }
+    }
+  };
+  request.send();
+}
+function meditationsRow(med) {
+    var newRow = document.createElement('tr');
+    var levelHero = med[7];
+    var addr = med[16].substring(0, 6) + '...' + med[16].substring(38, 42);
+    if (med[7] > 2000000000000) {
+    levelHero = 'SD-' + (med[7] - 2000000000000);
+    } else if (med[7] > 1000000000000) {
+    levelHero = 'CV-' + (med[7] - 1000000000000);
+    }
+    var lDate = timeConverter(med[8]);
+    switch (med[0]) {
+        case 'harmony':
+            tokens = HARMONY_TOKENS;
+            break;
+        case 'dfkchain':
+            tokens = DFKCHAIN_TOKENS;
+            break;
+        case 'klaytn':
+            tokens = KLAYTN_TOKENS;
+            break;
+        default:
+            tokens = {}
+    }
+    var statChoices = `<div class='bonusStat'>${MEDITATION_HERO_STATS[med[11]]}</div><span style="font-weight:900;">|</span><div class='blessingStat'>${MEDITATION_HERO_STATS[med[12]]}</div><div class='blessingStat'>${MEDITATION_HERO_STATS[med[13]]}</div>`;
+    var primarySummary = '<span style="font-weight: bold;">primary:</span>';
+    var secondarySummary = '<span style="font-weight: bold;">secondary:</span>';
+    var bonusSummary = '<span style="font-weight: bold;">bonus:</span>';
+    var raritySummary = '<span style="font-weight: bold;">rarity:</span>';
+    statData = JSON.parse(med[15]);
+    var totalStatUp = 0;
+    var healthUp = 0;
+    var manaUp = 0;
+    if (statData != null) {
+      statData.forEach((statUp) => {
+          switch (statUp['updateType']) {
+            case 0:
+              primarySummary = `${primarySummary} +${statUp['increase']} ${MEDITATION_HERO_STATS[statUp['stat']]}`;
+              totalStatUp += statUp['increase'];
+              break;
+            case 1:
+              secondarySummary = `${secondarySummary} +${statUp['increase']} ${MEDITATION_HERO_STATS[statUp['stat']]}`;
+              totalStatUp += statUp['increase'];
+              break;
+            case 2:
+              bonusSummary = `${bonusSummary} +${statUp['increase']} ${MEDITATION_HERO_STATS[statUp['stat']]}`;
+              totalStatUp += statUp['increase'];
+              break;
+            case 3:
+              raritySummary = `${raritySummary} +${statUp['increase']} ${MEDITATION_HERO_STATS[statUp['stat']]}`;
+              totalStatUp += statUp['increase'];
+              break;
+            case 4:
+              healthUp += statUp['increase'];
+              break;
+            case 5:
+              manaUp += statUp['increase'];
+              break;
+            default:
+              // ignored
+          }
+      });
+    }
+    statSummary = `${primarySummary}<br />\n${secondarySummary}<br />\n${bonusSummary}<br />\n${raritySummary}<br/>\n`;
+    heroLink = `<div class="feedHeroBox"><a href="/hero/${med[7]}" target="_blank"><div class="feedHeroLink heroLevelUp">Level Up</div><div id="heroImage" style="height: 200px;" title="click to view hero history page"><img src="https://hero-generator-mhpyphgqca-uc.a.run.app/image/${med[7]}" style="height: 200px;image-rendering:pixelated;" /></div><div class="feedHeroLink">${levelHero}</div></a></div>`;
+    items = `<img title="${tokens[med[14]]}" src="/static/images/items/${tokens[med[14]]}.gif" style="width:60px;height:60px;"/>`;
+    txFacts = `<div>${lDate}</div><div title="${med[16]}" onclick="copyTitle(event);whoDis('${med[16]}', event);" style="cursor: pointer;">${addr}</div><div><span style="font-weight: bold;">Level:</span> ${med[10]}</div>`;
+    results = `<div>Choices: ${statChoices}</div><div>${statSummary}</div><div><span style="font-weight: bold;">Summary:</span> +${healthUp} HP +${manaUp} MP +${totalStatUp} STATS</div>`;
+    newRow.innerHTML = `<td style="width: 200px;">${heroLink}</td><td style="text-align:center;">${items}</td><td>${txFacts}</td><td>${results}</td>`;
+    return newRow;
+}
+
+function loadLifeEvents() {
+  var waitElm = document.getElementById('medBusyWait');
+  waitElm.style.display = 'block';
+  // lookup player life event history
+  if (dataLimits['events'] > -1) {
+    limitOpt = `?limit=${dataLimits['events']}`;
+  } else {
+    limitOpt = '';
+  }
+  var request = new XMLHttpRequest();
+  request.open('POST', `/player/${playerId}/history/life${limitOpt}`, true);
+  request.onload = function() {
+    if (!request.status || (request.status >= 400)) {
+      alert('Failed to load life events.');
+    } else {
+      var resp = JSON.parse(request.responseText);
+      if ('error' in resp) {
+        document.getElementById('lifeEventList').innerHTML = resp['error'];
+      } else {
+        resultCount = resp['results'].length;
+        if (resultCount > 0) {
+          dataLimits['events'] = resp['results'][resp['results'].length-1][4]
+          dataRows['events'].push(...Array.from(resp['results']));
+        } else {
+          dataEnded['events'] = 1;
+        }
+      }
+      dataLoaded['events'] = 0;
+      if (dataLoaded['levels']+dataLoaded['events']+dataLoaded['sales']+dataLoaded['summons']+dataLoaded['purchases']==0 && showReady) {
+        showMore();
+      }
+    }
+  };
+  request.send();
+}
+function lifeEventsRow(lev) {
+    var newRow = document.createElement('tr');
+    var evHero = lev[3];
+    if (lev[3] > 2000000000000) {
+    evHero = 'SD-' + (lev[3] - 2000000000000);
+    } else if (lev[3] > 1000000000000) {
+    evHero = 'CV-' + (lev[3] - 1000000000000);
+    }
+    var lDate = dateConverter(lev[4]);
+    switch (lev[0]) {
+        case 'harmony':
+            tokens = HARMONY_TOKENS;
+            break;
+        case 'dfkchain':
+            tokens = DFKCHAIN_TOKENS;
+            break;
+        case 'klaytn':
+            tokens = KLAYTN_TOKENS;
+            break;
+        default:
+            tokens = {}
+    }
+    var eventImage = '';
+    var eventName = lev[5];
+    var eventDetails = '';
+
+    if (lev[7] != undefined) {
+    var stone = lev[6];
+    if (lev[6] == undefined || lev[6] == '0x9999999999999999999999999999999999999999') {
+        stone = '0x0000000000000000000000000000000000000000';
+    } else if ( lev[6] == 'PJ' ) {
+        stone = ''
+    }
+    eventImage = `<img style="max-width: 60px;" src="/static/images/items/${tokens[stone]}.gif" title="${tokens[stone]}" />`;
+    var summoner = lev[7];
+    if (lev[7] > 2000000000000) {
+        summoner = 'SD-' + (lev[7] - 2000000000000);
+    } else if (lev[7] > 1000000000000) {
+        summoner = 'CV-' + (lev[7] - 1000000000000);
+    }
+    var assistant = lev[8];
+    if (lev[8] > 2000000000000) {
+        assistant = 'SD-' + (lev[8] - 2000000000000);
+    } else if (lev[8] > 1000000000000) {
+        assistant = 'CV-' + (lev[8] - 1000000000000);
+    }
+
+    if ( summoner == 0 || summoner == undefined ) {
+        eventName = `Summoned by ${addr}`;
+    } else {
+        eventName = `Summoned by <a href="/hero/${lev[7]}">${summoner}</a> and <a href="/hero/${lev[8]}">${assistant}</a>`;
+    }
+    eventDetails = lev[3];
+    } else if (lev[5] == 'crystalvaleSurvivedPJ') {
+    eventImage = '<img style="max-width: 60px;" src="/static/images/survivor_badge.png" title="Perilous Journey Survivor" />';
+    eventName = 'Recovered Hero from Perilous Journey';
+    eventData = JSON.parse(lev[6]);
+    eventDetails = `Was level ${eventData['heroLevel']} on journey and earned rewards ${eventData['crystalAmount']/1000000000000000000} crystal and ${eventData['jewelAmount']/1000000000000000000} jewel.`;
+    } else if (lev[5] == 'crystalvalePerishedPJ') {
+    eventImage = '<img style="max-width: 60px;" src="/static/images/rip-badge.png" title="Perished on Perilous Journey to Crystalvale" />';
+    eventName = 'Lost Hero on Perilous Journey';
+    eventData = JSON.parse(lev[6]);
+    eventDetails = `Was level ${eventData['heroLevel']} on journey and earned rewards ${eventData['crystalAmount']/1000000000000000000} crystal and ${eventData['jewelAmount']/1000000000000000000} jewel.`;
+    } else if (lev[5] == 'crystalvaleRewardPJ') {
+    eventImage = '<img style="max-width: 60px;" src="/static/images/crystal.png" title="Perilous Journey Rewards" />';
+    eventName = 'Perilous Journey Death Rewards';
+    eventData = JSON.parse(lev[6]);
+    eventDetails += '<span style="font-weight: bold;">Hero collected: </span>';
+    eventData.forEach((rewardItem) => {
+        eventDetails += ` ${rewardItem['itemQuantity']} ${tokens[rewardItem['rewardItem']]}`;
+    });
+    } else if (lev[5] == 'crystalvaleStatUpPJ') {
+    eventImage = '<img style="max-width: 60px;" src="/static/images/arrow_up.png" title="Gained stats from perilous Journey" />';
+    eventName = 'Increased Stat Power from Perilous Journey';
+    eventData = JSON.parse(lev[6]);
+    eventDetails += '<span style="font-weight: bold;">Stats Increased: </span>';
+    eventData.forEach((statUp) => {
+        eventDetails += ` +${statUp['increase']} ${MEDITATION_HERO_STATS[statUp['stat']]}`;
+    });
+    } else if (lev[5] == 'gen0rerollReward') {
+    if (lev[0] == 'harmony') {
+        eventImage = '<img style="max-width: 60px;" src="/static/images/crystal.png" title="Crystalvale Launch Gen 0 Reroll Rewards" />';
+    } else {
+        eventImage = '<img style="max-width: 60px;" src="/static/images/jade.png" title="New Serendale Launch Gen 0 Reroll Rewards" />';
+    }
+    eventName = 'Gen0 Reroll Rewards';
+    eventData = JSON.parse(lev[6]);
+    eventDetails += '<span style="font-weight: bold;">Gen0 Rerolled: </span>';
+    eventData.forEach((rewardItem) => {
+        eventDetails += ` ${rewardItem['itemQuantity']} ${tokens[rewardItem['rewardItem']]}`;
+    });
+    } else if (lev[5] == 'gen0rerollStatUp') {
+    eventImage = '<img style="max-width: 60px;" src="/static/images/arrow_up.png" title="Gained stats from Gen 0 Reroll" />';
+    eventName = 'Increased Stat Power from Gen 0 Reroll';
+    eventData = JSON.parse(lev[6]);
+    eventDetails += '<span style="font-weight: bold;">SubClass Rerolled</span>';
+    eventData.forEach((statUp) => {
+        eventDetails += ` +${statUp['increase']} ${MEDITATION_HERO_STATS[statUp['stat']]}`;
+    });
+    } else if (lev[5] == 'geneRerollStatUp') {
+    eventImage = '<img style="max-width: 60px;" src="/static/images/arrow_up.png" title="Gained stats from Crafting Gene Reroll" />';
+    eventName = 'Increased Stat Power from Crafting Gene Reroll';
+    eventData = JSON.parse(lev[6]);
+    eventDetails += '<span style="font-weight: bold;">Crafting Genes Rolled: </span>';
+    eventData.forEach((statUp) => {
+        eventDetails += ` +${statUp['increase']} ${MEDITATION_HERO_STATS[statUp['stat']]}`;
+    });
+    } else if (lev[5] == 'SummonsReset') {
+    eventImage = '<img style="max-width: 60px;" src="/static/images/refresh.png" title="Summons Reset" />';
+    eventName = 'Gen0 Reroll Summons Reset';
+    eventData = JSON.parse(lev[6]);
+    eventDetails = `Summons Reset from ${eventData['oldSummonCount']} to ${eventData['newSummonCount']}.`;
+    } else if (lev[5] == 'XpUp') {
+    eventImage = '<img style="max-width: 60px;" src="/static/images/arrow_up.png" title="XP Increased" />';
+    eventName = 'Gen0 Reroll XP gain';
+    eventData = JSON.parse(lev[6]);
+    eventDetails = `Gained ${eventData['increase']} XP.`;
+    } else if (lev[5] == 'darkSummonSacrifice') {
+    eventImage = '<img style="max-width: 60px;" src="/static/images/rip-badge.png" title="Perished in Dark Summoning Pit" />';
+    eventName = 'Lost Hero in Dark Summon Pit';
+    }
+    heroLink = `<div class="feedHeroBox"><a href="/hero/${lev[3]}" target="_blank"><div class="feedHeroLink heroEvent">Life Event</div><div id="heroImage" style="height: 200px;" title="click to view hero history page"><img src="https://hero-generator-mhpyphgqca-uc.a.run.app/image/${lev[3]}" style="height: 200px;image-rendering:pixelated;" /></div><div class="feedHeroLink">${evHero}</div></a></div>`;
+    items = `${eventImage}`;
+    txFacts = `<div>${lDate}</div><div>${eventName}</div>`;
+    results = `<div>${eventDetails}</div>`;
+    newRow.innerHTML = `<td style="width: 200px;">${heroLink}</td><td style="text-align:center;">${items}</td><td>${txFacts}</td><td>${results}</td>`;
+    return newRow;
+}
+function loadSales() {
+  var waitElm = document.getElementById('medBusyWait');
+  waitElm.style.display = 'block';
+  // lookup player sales history
+  if (dataLimits['sales'] > -1) {
+    limitOpt = `?limit=${dataLimits['sales']}`;
+  } else {
+    limitOpt = '';
+  }
+  var request = new XMLHttpRequest();
+  request.open('POST', `/player/${playerId}/history/sales${limitOpt}`, true);
+  request.onload = function() {
+    if (!request.status || (request.status >= 400)) {
+      alert('Failed to load sales.');
+    } else {
+      var resp = JSON.parse(request.responseText);
+      if ('error' in resp) {
+        document.getElementById('saleList').innerHTML = resp['error'];
+      } else {
+        resultCount = resp['results'].length;
+        if (resultCount > 0) {
+          dataLimits['sales'] = resp['results'][resp['results'].length-1][4]
+          dataRows['sales'].push(...Array.from(resp['results']));
+        } else {
+          dataEnded['sales'] = 1;
+        }
+      }
+      dataLoaded['sales'] = 0;
+      if (dataLoaded['levels']+dataLoaded['events']+dataLoaded['sales']+dataLoaded['summons']+dataLoaded['purchases']==0 && showReady) {
+        showMore();
+      }
+    }
+  };
+  request.send();
+}
+function salesRow(sale) {
+    var newRow = document.createElement('tr');
+    var saleHero = sale[3];
+    if (sale[3] > 2000000000000) {
+    saleHero = 'SD-' + (sale[3] - 2000000000000);
+    } else if (sale[3] > 1000000000000) {
+    saleHero = 'CV-' + (sale[3] - 1000000000000);
+    }
+    var owner = sale[7].substring(0, 6) + '...' + sale[7].substring(38, 42);
+    var winner = sale[5].substring(0, 6) + '...' + sale[5].substring(38, 42);
+    var lDate = timeConverter(sale[4]);
+    switch (sale[0]) {
+        case 'harmony':
+            token = 'jewel';
+            break;
+        case 'dfkchain':
+            token = 'crystal';
+            break;
+        case 'klaytn':
+            token = 'jade';
+            break;
+        default:
+            tokens = {}
+    }
+    var salePrice = sale[6];
+    if (sale[8] == 'pet') {
+      heroLink = `<div class="feedHeroBox"><a href="http://www.adfk.app/pets/${sale[3]}" target="_blank"><div class="feedHeroLink heroSale">Sold Pet</div><div id="heroImage" style="height: 200px;" title="click to view pet on ADFK"><img src="https://pets.defikingdoms.com/image/${sale[3]}" style="height: 200px;image-rendering:pixelated;" /></div><div class="feedHeroLink">${saleHero}</div></a></div>`;
+    } else {
+      heroLink = `<div class="feedHeroBox"><a href="/hero/${sale[3]}" target="_blank"><div class="feedHeroLink heroSale">Sold Hero</div><div id="heroImage" style="height: 200px;" title="click to view hero history page"><img src="https://hero-generator-mhpyphgqca-uc.a.run.app/image/${sale[3]}" style="height: 200px;image-rendering:pixelated;" /></div><div class="feedHeroLink">${saleHero}</div></a></div>`;
+    }
+    items = `<img style="max-width:60px;" src="/static/images/${token}.png" />`;
+    txFacts = `<div>${lDate}</div><div title="${sale[7]}" onclick="copyTitle(event);whoDis('${sale[7]}', event);" style="cursor: pointer;">${owner}</div>`;
+    results = `<div><span style="font-weight: bold;">Winner:</span> <span title="${sale[5]}" onclick="copyTitle(event);whoDis('${sale[5]}', event);" style="cursor: pointer;">${winner}</span></div><div><span style="font-weight: bold;">Sale Price:</span> <img style="max-width:16px;" src="/static/images/${token}-perspective.png" />${salePrice.toFixed(1)}</div>`;
+    newRow.innerHTML = `<td style="width: 200px;">${heroLink}</td><td style="text-align:center;">${items}</td><td>${txFacts}</td><td>${results}</td>`;
+    return newRow;
+}
+function loadSummons() {
+  var waitElm = document.getElementById('medBusyWait');
+  waitElm.style.display = 'block';
+  // lookup player summon history
+  if (dataLimits['summons'] > -1) {
+    limitOpt = `&limit=${dataLimits['summons']}`;
+  } else {
+    limitOpt = '';
+  }
+  var request = new XMLHttpRequest();
+  request.open('POST', `/player/${playerId}/history/summons?order=desc${limitOpt}`, true);
+  request.onload = function() {
+    if (!request.status || (request.status >= 400)) {
+      alert('Failed to load summons.');
+    } else {
+      var resp = JSON.parse(request.responseText);
+      if ('error' in resp) {
+        document.getElementById('summonList').innerHTML = resp['error'];
+      } else {
+        resultCount = resp['results'].length;
+        if (resultCount > 0) {
+          dataLimits['summons'] = resp['results'][resp['results'].length-1][4]
+          dataRows['summons'].push(...Array.from(resp['results']));
+        } else {
+          dataEnded['summons'] = 1;
+        }
+      }
+      dataLoaded['summons'] = 0;
+      if (dataLoaded['levels']+dataLoaded['events']+dataLoaded['sales']+dataLoaded['summons']+dataLoaded['purchases']==0 && showReady) {
+        showMore();
+      }
+    }
+  };
+  request.send();
+}
+function summonsRow(summon) {
+    var newRow = document.createElement('tr');
+    var addr = summon[3].substring(0, 6) + '...' + summon[3].substring(38, 42);
+    var lDate = timeConverter(summon[4]);
+    switch (summon[0]) {
+        case 'harmony':
+            tokens = HARMONY_TOKENS;
+            break;
+        case 'dfkchain':
+            tokens = DFKCHAIN_TOKENS;
+            break;
+        case 'klaytn':
+            tokens = KLAYTN_TOKENS;
+            break;
+        default:
+            tokens = {}
+    }
+    var stone = summon[6];
+    if (summon[6] == undefined) {
+    stone = '0x0000000000000000000000000000000000000000';
+    }
+    newHero = summon[5];
+    if (summon[5] > 2000000000000) {
+    newHero = 'SD-' + (summon[5] - 2000000000000);
+    } else if (summon[5] > 1000000000000) {
+    newHero = 'CV-' + (summon[5] - 1000000000000);
+    }
+    summoner = summon[7];
+    if (summon[7] > 2000000000000) {
+    summoner = 'SD-' + (summon[7] - 2000000000000);
+    } else if (summon[7] > 1000000000000) {
+    summoner = 'CV-' + (summon[7] - 1000000000000);
+    }
+    assistant = summon[8];
+    if (summon[8] > 2000000000000) {
+    assistant = 'SD-' + (summon[8] - 2000000000000);
+    } else if (summon[8] > 1000000000000) {
+    assistant = 'CV-' + (summon[8] - 1000000000000);
+    }
+    heroLink = `<div class="feedHeroBox"><a href="/hero/${summon[5]}" target="_blank"><div class="feedHeroLink heroSummoned">Summoned</div><div id="heroImage" style="height: 200px;" title="click to view hero history page"><img src="https://hero-generator-mhpyphgqca-uc.a.run.app/image/${summon[5]}" style="height: 200px;image-rendering:pixelated;" /></div><div class="feedHeroLink">${newHero}</div></a></div>`;
+    items = `<img style="max-width: 60px;" src="/static/images/items/${tokens[stone]}.gif" title="${tokens[stone]}" />`;
+    txFacts = `<div>${lDate}</div><div title="${summon[3]}" onclick="copyTitle(event);whoDis('${summon[3]}', event);" style="cursor: pointer;">${addr}</div>`;
+    results = `<div><span style="font-weight: bold;">Summoner:</span> <a href="/hero/${summon[7]}">${summoner}</a> <img style="max-width:16px;" src="/static/images/items/gaias-tear.png" />${summon[9]}</div><div><span style="font-weight: bold;">Assistant:</span> <a href="/hero/${summon[8]}">${assistant}</a> <img style="max-width:16px;" src="/static/images/items/gaias-tear.png" />${summon[10]}</div>`;
+    newRow.innerHTML = `<td style="width: 200px;">${heroLink}</td><td style="text-align:center;">${items}</td><td>${txFacts}</td><td>${results}</td>`;
+    return newRow;
+}
+function loadPurchases() {
+  var waitElm = document.getElementById('medBusyWait');
+  waitElm.style.display = 'block';
+  // lookup player sales history
+  if (dataLimits['purchases'] > -1) {
+    limitOpt = `?limit=${dataLimits['purchases']}`;
+  } else {
+    limitOpt = '';
+  }
+  var request = new XMLHttpRequest();
+  request.open('POST', `/player/${playerId}/history/purchases${limitOpt}`, true);
+  request.onload = function() {
+    if (!request.status || (request.status >= 400)) {
+      alert('Failed to load purchases.');
+    } else {
+      var resp = JSON.parse(request.responseText);
+      if ('error' in resp) {
+        document.getElementById('purchaseList').innerHTML = resp['error'];
+      } else {
+        resultCount = resp['results'].length;
+        if (resultCount > 0) {
+          dataLimits['purchases'] = resp['results'][resp['results'].length-1][4]
+          dataRows['purchases'].push(...Array.from(resp['results']));
+        } else {
+          dataEnded['purchases'] = 1;
+        }
+      }
+      dataLoaded['purchases'] = 0;
+      if (dataLoaded['levels']+dataLoaded['events']+dataLoaded['sales']+dataLoaded['summons']+dataLoaded['purchases']==0 && showReady) {
+        showMore();
+      }
+    }
+  };
+  request.send();
+}
+function purchasesRow(purchase) {
+    var newRow = document.createElement('tr');
+    var purchaseHero = purchase[3];
+    if (purchase[3] > 2000000000000) {
+      purchaseHero = 'SD-' + (purchase[3] - 2000000000000);
+    } else if (purchase[3] > 1000000000000) {
+      purchaseHero = 'CV-' + (purchase[3] - 1000000000000);
+    }
+    var owner = purchase[7].substring(0, 6) + '...' + purchase[7].substring(38, 42);
+    var winner = purchase[5].substring(0, 6) + '...' + purchase[5].substring(38, 42);
+    var lDate = timeConverter(purchase[4]);
+    switch (purchase[0]) {
+        case 'harmony':
+            token = 'jewel';
+            break;
+        case 'dfkchain':
+            token = 'crystal';
+            break;
+        case 'klaytn':
+            token = 'jade';
+            break;
+        default:
+            tokens = {}
+    }
+    var salePrice = purchase[6];
+    if (purchase[8] == 'pet') {
+      heroLink = `<div class="feedHeroBox"><a href="/pet/${purchase[3]}" target="_blank"><div class="feedHeroLink heroSale">Purchased Pet</div><div id="heroImage" style="height: 200px;" title="click to view pet details"><img src="https://pets.defikingdoms.com/image/${purchase[3]}" style="height: 200px;image-rendering:pixelated;" /></div><div class="feedHeroLink">${purchaseHero}</div></a></div>`;
+    } else {
+      heroLink = `<div class="feedHeroBox"><a href="/hero/${purchase[3]}" target="_blank"><div class="feedHeroLink heroSale">Purchased Hero</div><div id="heroImage" style="height: 200px;" title="click to view hero history page"><img src="https://hero-generator-mhpyphgqca-uc.a.run.app/image/${purchase[3]}" style="height: 200px;image-rendering:pixelated;" /></div><div class="feedHeroLink">${purchaseHero}</div></a></div>`;
+    }
+    items = `<img style="max-width:60px;" src="/static/images/${token}.png" />`;
+    txFacts = `<div>${lDate}</div><div title="${purchase[5]}" onclick="copyTitle(event);whoDis('${purchase[5]}', event);" style="cursor: pointer;">${winner}</div>`;
+    results = `<div>Seller: <span title="${purchase[7]}" onclick="copyTitle(event);whoDis('${purchase[7]}', event);" style="cursor: pointer;">${owner}</span></div><div>Sale Price: <img style="max-width:16px;" src="/static/images/${token}-perspective.png" />${salePrice.toFixed(1)}</div>`;
+    newRow.innerHTML = `<td style="width: 200px;">${heroLink}</td><td style="text-align:center;">${items}</td><td>${txFacts}</td><td>${results}</td>`;
+    return newRow;
+}
+function loadHatches() {
+  var waitElm = document.getElementById('medBusyWait');
+  waitElm.style.display = 'block';
+  // lookup player pet hatches history
+  if (dataLimits['hatches'] > -1) {
+    limitOpt = `&limit=${dataLimits['hatches']}`;
+  } else {
+    limitOpt = '';
+  }
+  var request = new XMLHttpRequest();
+  request.open('POST', `/player/${playerId}/history/hatches?order=desc${limitOpt}`, true);
+  request.onload = function() {
+    if (!request.status || (request.status >= 400)) {
+      alert('Failed to load hatches.');
+    } else {
+      var resp = JSON.parse(request.responseText);
+      if ('error' in resp) {
+        document.getElementById('hatchList').innerHTML = resp['error'];
+      } else {
+        resultCount = resp['results'].length;
+        if (resultCount > 0) {
+          dataLimits['hatches'] = resp['results'][resp['results'].length-1][4]
+          dataRows['hatches'].push(...Array.from(resp['results']));
+        } else {
+          dataEnded['hatches'] = 1;
+        }
+      }
+      dataLoaded['hatches'] = 0;
+      if (dataLoaded['levels']+dataLoaded['events']+dataLoaded['sales']+dataLoaded['summons']+dataLoaded['purchases']+dataLoaded['hatches']==0 && showReady) {
+        showMore();
+      }
+    }
+  };
+  request.send();
+}
+function hatchesRow(hatch) {
+    var newRow = document.createElement('tr');
+    var addr = hatch[3].substring(0, 6) + '...' + hatch[3].substring(38, 42);
+    var lDate = timeConverter(hatch[4]);
+    switch (hatch[0]) {
+        case 'harmony':
+            tokens = HARMONY_TOKENS;
+            break;
+        case 'dfkchain':
+            tokens = DFKCHAIN_TOKENS;
+            break;
+        case 'klaytn':
+            tokens = KLAYTN_TOKENS;
+            break;
+        default:
+            tokens = {}
+    }
+    newPet = hatch[5];
+    if (hatch[5] > 2000000000000) {
+      newPet = 'SD-' + (hatch[5] - 2000000000000);
+    } else if (hatch[5] > 1000000000000) {
+      newPet = 'CV-' + (hatch[5] - 1000000000000);
+    }
+    petLink = `<div class="feedHeroBox"><a href="/pet/${hatch[5]}" target="_blank"><div class="feedHeroLink petHatched">Hatched Pet</div><div id="heroImage" style="height: 200px;" title="click to view pet details"><img src="https://pets.defikingdoms.com/image/${hatch[5]}" style="height: 200px;image-rendering:pixelated;" /></div><div class="feedHeroLink">${newPet}</div></a></div>`;
+    items = `<img style="max-width: 60px;" src="/static/images/items/egg${hatch[6]}.png" title="${EGG_NAMES[hatch[6]]}" />`;
+    txFacts = `<div>${lDate}</div><div title="${hatch[3]}" onclick="copyTitle(event);whoDis('${hatch[3]}', event);" style="cursor: pointer;">${addr}</div>`;
+    results = `<div style="font-weight:bold;">${EGG_TIERS[hatch[7]]}</div><div id="petData_${hatch[5]}">Loading pet data...</div>`;
+    newRow.innerHTML = `<td style="width: 200px;">${petLink}</td><td style="text-align:center;">${items}</td><td>${txFacts}</td><td>${results}</td>`;
+    loadPet(hatch[5]);
+    return newRow;
+}
+function refreshLists() {
+}
+</script>
+<a href="/" title="Return to Home"><div id="pageTitle"><div>DFK History</div><img style="position:relative;left:-8px;top:-8px;" src="/static/images/line.png" /></div></a>
+<div style="float:right;" id="loginBlock"><input id="connectWallet" type="button" value="Connect Wallet" onclick="connect();" class="largeButton"><span id="member"></span><input id="loginButton" type="button" value="Login" onclick="login(true);" class="largeButton" style="display:none;"><input id="logoutButton" type="button" value="Logout" onclick="logout();" class="largeButton" style="display:none;"></div>
+<h2 class="contTitle" style="position: absolute;left: 50%;top: 50px;transform: translate(-50%);"><img src="/static/images/gui_title_left.png" /><div id="playerHeader"><span style="font-family:romanantique;" id="playerName"></span></div><img src="/static/images/gui_title_right.png" /></h2>
+<div id="feedContainer">
+  <img style="width: 100%" src="/static/images/parchment-top.png" />
+  <div class="scrollBack">
+    <div id="levelsList"></div><div id="lifeEventList"></div><div id="saleList"></div><div id="summonList"></div><div id="purchaseList"></div><div id="hatchList"></div>
+    <table id="feedList" class="heroTable"></table>
+    <div id="medBusyWait"><div id="animate1"><div id="animate1Img"></div></div></div>
+    <div id="endMessage" class="contTitle" style="display:none;">End of History</div>
+  </div>
+  <img style="width: 100%" src="/static/images/parchment-bottom.png" />
+</div>
+<div style="position:fixed;left:0;bottom:160px;margin:16px;"><a href="/player" title="Player History"><img style="width: 64px;" src="/static/images/player.png" /></a></div>
+<div style="position:fixed;left:0;bottom:80px;margin:16px;"><a href="/pets" title="Return to Pet Selection"><img style="width: 64px;" src="/static/images/pets-icon.png" /></a></div>
+<div style="position:fixed;left:0;bottom:0px;margin:16px;"><a href="/heroes" title="Return to Hero Selection"><img style="width: 64px;" src="/static/images/oldportal.png" /></a></div>
+<div style="position:fixed;right:0;bottom:0px;margin:8px;"><a href="/about" title="FAQ"><img style="width: 64px;opacity: 65%;" src="/static/images/help.png" /></a></div>
+</body>
+</html>

@@ -1,0 +1,626 @@
+<html lang="en">
+<head>
+  <title>Hero History</title>
+  <meta property="og:title" content="Hero History">
+  <meta property="og:description" content="Event history for the life of hero {{ heroIdShort }}.">
+  <link rel="shortcut icon" href="/static/images/favicon.png" />
+  <meta property="og:image" content="https://heroes.defikingdoms.com/image/{{ heroIdLong }}">
+  <link rel="stylesheet" type="text/css" href="/static/herohistory.css" media="screen" />
+  <script src="/static/herohistory.js" type="text/javascript"></script>
+</head>
+<body>
+<script>
+var activeData = '{{ activeTab }}';
+var dataLoaded = {
+  'events': -1,
+  'levels': -1,
+  'sales': -1,
+  'summons': -1
+};
+const heroIdLong = '{{ heroIdLong }}';
+const heroIdShort = '{{ heroIdShort }}';
+window.onload = (event) => {
+  var dh = document.getElementById('heroDataToggle');
+  dh.addEventListener("click", function(event) {
+    var elmId = event.target.id;
+    if (event.target.classList.contains('toggleButton')) {
+      var title = event.target.getAttribute("title");
+      switch (title) {
+        case "View Life Events":
+          switchView('events');
+          break;
+        case "View Level Ups":
+          switchView('levels');
+          break;
+        case "View Sales":
+          switchView('sales');
+          break;
+        case "View Summons":
+          switchView('summons');
+          break;
+        default:
+          //nada
+      }
+    }
+  });
+  loadHero();
+  switchView(activeData);
+};
+
+function switchView(dataList) {
+  [].forEach.call(document.querySelectorAll('.heroTable'), function (el) {
+    el.style.display = 'none';
+  });
+  [].forEach.call(document.querySelectorAll('.toggleButton'), function (el) {
+    el.classList.remove('toggleButtonActive')
+  });
+  var headElm = document.getElementById(`${dataList}Header`);
+  headElm.classList.add('toggleButtonActive');
+  var showElm = document.getElementById(`${dataList}List`);
+  showElm.style.display = 'table';
+  if (dataLoaded[dataList] < 0) {
+    switch (dataList) {
+      case 'events':
+        loadLifeEvents();
+        break;
+      case 'levels':
+        loadLevelUps();
+        break;
+      case 'sales':
+        loadSales();
+        break;
+      case 'summons':
+        loadSummons();
+        break;
+      default:
+        console.log('invalid data type');
+    }
+  }
+  activeData = dataList;
+}
+function loadHero() {
+  // load basic Hero Metadata
+  var request = new XMLHttpRequest();
+  request.open('GET', `https://heroes.defikingdoms.com/token/${heroIdLong}`, true);
+  request.onload = function() {
+    if (!request.status || (request.status >= 400)) {
+      alert('Failed to load hero meta data.');
+    } else {
+      var resp = JSON.parse(request.responseText);
+      if ('error' in resp) {
+        alert(resp['error']);
+      } else {
+        displayHero(resp);
+      }
+    }
+  };
+  request.send();
+}
+function displayHero(data) {
+  var hero = {
+    'Name': data['name'],
+    'Image': data['image'],
+    'Element': 'unknown',
+    'Gender': 'unknown',
+    'Background': 'unknown',
+    'Profession': 'unknown',
+    'Generation': 'unknown',
+    'Shiny': 'unknown',
+    'Rarity': 'unknown',
+    'Class': 'unknown',
+    'Sub Class': 'unknown',
+    'Level': 'unknown'
+  }
+  if ('attributes' in data) {
+    data['attributes'].forEach((trait) => {
+      hero[trait['trait_type']] = trait['value'];
+    });
+  }
+  var contElm = document.getElementById('heroGraphic');
+  contElm.style.backgroundImage = `url(/static/images/background-${hero['Background']}.png)`
+  var nameElm = document.getElementById('heroName');
+  nameElm.innerHTML = hero['Name'];
+  var genElm = document.getElementById('heroGen');
+  genElm.innerHTML = `Gen${hero['Generation']}`;
+  var genderElm = document.getElementById('heroGender');
+  genderElm.src = `/static/images/icon-${hero['Gender']}.png`;
+  var elementElm = document.getElementById('heroElement');
+  elementElm.src = `/static/images/element-${hero['Element']}.png`;
+  var rarityElm = document.getElementById('heroRarity');
+  rarityElm.src = `/static/images/rarity-${hero['Rarity']}.png`;
+  if (hero['Rarity'] == 'mythic') {
+    var mythicScreen = document.createElement('div');
+    mythicScreen.style.position = 'absolute';
+    mythicScreen.style.top = '12px';
+    mythicScreen.style.left = '12px';
+    mythicScreen.classList = 'mythic';
+    contElm.appendChild(mythicScreen);
+  }
+  var jobsElm = document.getElementById('heroJobs');
+  jobsElm.innerHTML = `${hero['Class']}/${hero['Sub Class']} (${hero['Profession']})`;
+  var levelElm = document.getElementById('heroLevel');
+  levelElm.innerHTML = hero['Level'];
+  positionHero(hero['Background']);
+}
+function positionHero(background) {
+  var top = 150;
+  var left = 410;
+  switch (background) {
+    case 'arctic':
+      top = 300;
+      left = 350;
+      break;
+    case 'desert':
+      top = 230;
+      left = 350;
+      break;
+    case 'plains':
+    case 'island':
+    case 'mountains':
+      top = 350;
+      left = 440;
+      break;
+    case 'forest':
+      top = 280;
+      left = 360;
+      break;
+    case 'city':
+      top = 280;
+      left = 190;
+      break;
+    case 'swamp':
+      top = 170;
+      left = 330;
+      break;
+    default:
+      top = 150;
+      left = 410;
+  }
+  imageElm = document.getElementById('heroImage');
+  imageElm.style.top = top;
+  imageElm.style.left = left;
+}
+function loadLevelUps() {
+  var waitElm = document.getElementById('medBusyWait');
+  waitElm.style.display = 'block';
+  // lookup hero level up history
+  var request = new XMLHttpRequest();
+  request.open('POST', `/hero/${heroIdLong}/history/levelup`, true);
+  request.onload = function() {
+    if (!request.status || (request.status >= 400)) {
+      alert('Failed to load meditations.');
+    } else {
+      var resp = JSON.parse(request.responseText);
+      if ('error' in resp) {
+        document.getElementById('levelsList').innerHTML = resp['error'];
+      } else {
+        dataLoaded['levels'] = resp['results'].length;
+        meditationsTable(resp);
+      }
+    }
+  };
+  request.send();
+}
+function meditationsTable(data) {
+  var listElm = document.getElementById('levelsList').getElementsByTagName('tbody')[0];
+  listElm.deleteRow(0);
+  var newRow = listElm.insertRow(listElm.rows.length);
+  newRow.innerHTML = '<th>Enh.</th><th>owner</th><th>Block Date</th><th>To Level</th><th>Bonus Choices</th><th>Stat Ups</th>';
+  var level = 1;
+  if (data['results'].length > 0) {
+    data['results'].forEach((med) => {
+      var newRow = listElm.insertRow(listElm.rows.length);
+      // toLevel db column not populated just count it
+      level++;
+      var addr = med[7].substring(0, 6) + '...' + med[7].substring(38, 42);
+      var lDate = dateConverter(med[8]);
+      switch (med[0]) {
+          case 'harmony':
+              tokens = HARMONY_TOKENS;
+              break;
+          case 'dfkchain':
+              tokens = DFKCHAIN_TOKENS;
+              break;
+          case 'klaytn':
+              tokens = KLAYTN_TOKENS;
+              break;
+          default:
+              tokens = {}
+      }
+      var statChoices = `<div class='bonusStat'>${MEDITATION_HERO_STATS[med[11]]}</div><span style="font-weight:900;">|</span><div class='blessingStat'>${MEDITATION_HERO_STATS[med[12]]}</div><div class='blessingStat'>${MEDITATION_HERO_STATS[med[13]]}</div>`;
+      var statSummary = '';
+      statData = JSON.parse(med[15]);
+      var totalStatUp = 0;
+      var healthUp = 0;
+      var manaUp = 0;
+      statData.forEach((statUp) => {
+          statSummary = `${statSummary}(${MEDITATION_STATUP_TYPES[statUp['updateType']]}): +${statUp['increase']} ${MEDITATION_HERO_STATS[statUp['stat']]}\n`;
+          switch (statUp['updateType']) {
+              case 0:
+              case 1:
+              case 2:
+              case 3:
+                  totalStatUp += statUp['increase'];
+                  break;
+              case 4:
+                  healthUp += statUp['increase'];
+                  break;
+              case 5:
+                  manaUp += statUp['increase'];
+                  break;
+              default:
+                  // ignored
+          }
+      });
+      newRow.innerHTML = `<td><img title="${tokens[med[14]]}" src="/static/images/items/${tokens[med[14]]}.gif" style="width:24px;height:24px;"/></td><td title="${med[7]}" onclick="copyTitle(event);whoDis('${med[7]}', event);" style="cursor: pointer;">${addr}</td><td>${lDate}</td><td>${level}</td><td>${statChoices}</td><td title="${statSummary}" onclick="copyTitle(event);" style="cursor: pointer;">+${healthUp} HP +${manaUp} MP +${totalStatUp} STATS</td>`;
+    });
+  } else {
+    var newRow = document.createElement('tr');
+    newRow.innerHTML = '<td colspan=4>None Found</td>';
+    listElm.appendChild(newRow);
+  }
+  var waitElm = document.getElementById('medBusyWait');
+  waitElm.style.display = 'none';
+}
+
+function loadLifeEvents() {
+  var waitElm = document.getElementById('medBusyWait');
+  waitElm.style.display = 'block';
+  // lookup hero life event history
+  var request = new XMLHttpRequest();
+  request.open('POST', `/hero/${heroIdLong}/history/life`, true);
+  request.onload = function() {
+    if (!request.status || (request.status >= 400)) {
+      alert('Failed to load life events.');
+    } else {
+      var resp = JSON.parse(request.responseText);
+      if ('error' in resp) {
+        document.getElementById('lifeEventList').innerHTML = resp['error'];
+      } else {
+        dataLoaded['events'] = resp['results'].length;
+        lifeEventsTable(resp);
+      }
+    }
+  };
+  request.send();
+}
+function lifeEventsTable(data) {
+  var listElm = document.getElementById('eventsList').getElementsByTagName('tbody')[0];
+  listElm.deleteRow(0);
+  var newRow = listElm.insertRow(listElm.rows.length);
+  newRow.innerHTML = '<th></th><th>owner</th><th>Block Date</th><th>Event</th>';
+  var level = 1;
+  if (data['results'].length > 0) {
+    data['results'].forEach((lev) => {
+      var newRow = listElm.insertRow(listElm.rows.length);
+      // toLevel db column not populated just count it
+      level++;
+      var addr = lev[3];
+      if ( lev[3] != undefined && lev[3].length > 40 ) {
+        addr = lev[3].substring(0, 6) + '...' + lev[3].substring(38, 42);
+      }
+      var lDate = dateConverter(lev[4]);
+      switch (lev[0]) {
+          case 'harmony':
+              tokens = HARMONY_TOKENS;
+              break;
+          case 'dfkchain':
+              tokens = DFKCHAIN_TOKENS;
+              break;
+          case 'klaytn':
+              tokens = KLAYTN_TOKENS;
+              break;
+          default:
+              tokens = {}
+      }
+      var eventImage = '';
+      var eventName = lev[5];
+      var eventDetails = '';
+
+      if (lev[7] != undefined) {
+        var stone = lev[6];
+        if (lev[6] == undefined || lev[6] == '0x9999999999999999999999999999999999999999') {
+          stone = '0x0000000000000000000000000000000000000000';
+        } else if ( lev[6] == 'PJ' ) {
+          stone = ''
+        }
+        if (stone != '0x0000000000000000000000000000000000000000') {
+          addBadge(`items/${tokens[stone]}.gif`);
+        }
+        eventImage = `<img style="max-width: 24px;" src="/static/images/items/${tokens[stone]}.gif" title="${tokens[stone]}" />`;
+        var summoner = lev[7];
+        if (lev[7] > 2000000000000) {
+          summoner = 'SD-' + (lev[7] - 2000000000000);
+        } else if (lev[7] > 1000000000000) {
+          summoner = 'CV-' + (lev[7] - 1000000000000);
+        }
+        var assistant = lev[8];
+        if (lev[8] > 2000000000000) {
+          assistant = 'SD-' + (lev[8] - 2000000000000);
+        } else if (lev[8] > 1000000000000) {
+          assistant = 'CV-' + (lev[8] - 1000000000000);
+        }
+
+        if ( summoner == 0 || summoner == undefined ) {
+          eventName = `Summoned by ${addr}`;
+        } else {
+          eventName = `Summoned by <a href="/hero/${lev[7]}">${summoner}</a> and <a href="/hero/${lev[8]}">${assistant}</a>`;
+        }
+        eventDetails = lev[3];
+        if (lev[5] == 'CrystalDarkSummoned') {
+          addBadge('dark-summon-badge.png')
+        }
+      } else if (lev[5] == 'crystalvaleSurvivedPJ') {
+        eventImage = '<img style="max-width: 24px;" src="/static/images/survivor_badge.png" title="Perilous Journey Survivor" />';
+        eventName = 'Survived Perilous Journey';
+        eventData = JSON.parse(lev[6]);
+        eventDetails = `Was level ${eventData['heroLevel']} on journey and earned rewards ${eventData['crystalAmount']/1000000000000000000} crystal and ${eventData['jewelAmount']/1000000000000000000} jewel.`;
+        addBadge('survivor_badge.png');
+      } else if (lev[5] == 'crystalvalePerishedPJ') {
+        eventImage = '<img style="max-width: 24px;" src="/static/images/rip-badge.png" title="Perished on Perilous Journey to Crystalvale" />';
+        eventName = 'Perished on Perilous Journey';
+        eventData = JSON.parse(lev[6]);
+        eventDetails = `Was level ${eventData['heroLevel']} on journey and earned rewards ${eventData['crystalAmount']/1000000000000000000} crystal and ${eventData['jewelAmount']/1000000000000000000} jewel.`;
+        addBadge('rip-badge.png');
+      } else if (lev[5] == 'crystalvaleRewardPJ') {
+        eventImage = '<img style="max-width: 24px;" src="/static/images/crystal.png" title="Perilous Journey Rewards" />';
+        eventName = 'Perilous Journey Death Rewards';
+        eventData = JSON.parse(lev[6]);
+        eventDetails += 'Hero collected';
+        eventData.forEach((rewardItem) => {
+          eventDetails += ` ${rewardItem['itemQuantity']} ${tokens[rewardItem['rewardItem']]}`;
+        });
+      } else if (lev[5] == 'crystalvaleStatUpPJ') {
+        eventImage = '<img style="max-width: 24px;" src="/static/images/arrow_up.png" title="Gained stats from perilous Journey" />';
+        eventName = 'Increased Stat Power from Perilous Journey';
+        eventData = JSON.parse(lev[6]);
+        eventDetails += 'Stats Increased';
+        eventData.forEach((statUp) => {
+          eventDetails += ` +${statUp['increase']} ${MEDITATION_HERO_STATS[statUp['stat']]}`;
+        });
+      } else if (lev[5] == 'gen0rerollReward') {
+        if (lev[0] == 'harmony') {
+          eventImage = '<img style="max-width: 24px;" src="/static/images/crystal.png" title="Crystalvale Launch Gen 0 Reroll Rewards" />';
+        } else {
+          eventImage = '<img style="max-width: 24px;" src="/static/images/jade.png" title="New Serendale Launch Gen 0 Reroll Rewards" />';
+        }
+        eventName = 'Gen0 Reroll Rewards';
+        eventData = JSON.parse(lev[6]);
+        eventDetails += 'Gen0 Rerolled';
+        eventData.forEach((rewardItem) => {
+          eventDetails += ` ${rewardItem['itemQuantity']} ${tokens[rewardItem['rewardItem']]}`;
+        });
+      } else if (lev[5] == 'gen0rerollStatUp') {
+        eventImage = '<img style="max-width: 24px;" src="/static/images/arrow_up.png" title="Gained stats from Gen 0 Reroll" />';
+        eventName = 'Increased Stat Power from Gen 0 Reroll';
+        eventData = JSON.parse(lev[6]);
+        eventDetails += 'SubClass Rerolled';
+        eventData.forEach((statUp) => {
+          eventDetails += ` +${statUp['increase']} ${MEDITATION_HERO_STATS[statUp['stat']]}`;
+        });
+      } else if (lev[5] == 'geneRerollStatUp') {
+        eventImage = '<img style="max-width: 24px;" src="/static/images/arrow_up.png" title="Gained stats from Crafting Gene Reroll" />';
+        eventName = 'Increased Stat Power from Crafting Gene Reroll';
+        eventData = JSON.parse(lev[6]);
+        eventDetails += 'Crafting Genes Rolled';
+        eventData.forEach((statUp) => {
+          eventDetails += ` +${statUp['increase']} ${MEDITATION_HERO_STATS[statUp['stat']]}`;
+        });
+      } else if (lev[5] == 'SummonsReset') {
+        eventImage = '<img style="max-width: 24px;" src="/static/images/refresh.png" title="Summons Reset" />';
+        eventName = 'Gen0 Reroll Summons Reset';
+        eventData = JSON.parse(lev[6]);
+        eventDetails = `Summons Reset from ${eventData['oldSummonCount']} to ${eventData['newSummonCount']}.`;
+      } else if (lev[5] == 'XpUp') {
+        eventImage = '<img style="max-width: 24px;" src="/static/images/arrow_up.png" title="XP Increased" />';
+        eventName = 'Gen0 Reroll XP gain';
+        eventData = JSON.parse(lev[6]);
+        eventDetails = `Gained ${eventData['increase']} XP.`;
+      } else if (lev[5] == 'darkSummonSacrifice') {
+        eventImage = '<img style="max-width: 24px;" src="/static/images/rip-badge.png" title="Perished in Dark Summoning Pit" />';
+        eventName = 'Perished in Dark Summon Pit';
+        addBadge('rip-badge.png');
+      }
+      newRow.innerHTML = `<td>${eventImage}</td><td title="${lev[3]}" onclick="copyTitle(event);whoDis('${lev[3]}', event);" style="cursor: pointer;">${addr}</td><td>${lDate}</td><td title="${eventDetails}" onclick="copyTitle(event);" style="cursor: pointer;">${eventName}</td>`;
+    });
+  } else {
+    var newRow = document.createElement('tr');
+    newRow.innerHTML = '<td colspan=4>None Found</td>';
+    listElm.appendChild(newRow);
+  }
+  var waitElm = document.getElementById('medBusyWait');
+  waitElm.style.display = 'none';
+}
+function loadSales() {
+  var waitElm = document.getElementById('medBusyWait');
+  waitElm.style.display = 'block';
+  // lookup hero sales history
+  var request = new XMLHttpRequest();
+  request.open('POST', `/hero/${heroIdLong}/history/sales`, true);
+  request.onload = function() {
+    if (!request.status || (request.status >= 400)) {
+      alert('Failed to load sales.');
+    } else {
+      var resp = JSON.parse(request.responseText);
+      if ('error' in resp) {
+        document.getElementById('saleList').innerHTML = resp['error'];
+      } else {
+        dataLoaded['sales'] = resp['results'].length;
+        salesTable(resp);
+      }
+    }
+  };
+  request.send();
+}
+function salesTable(data) {
+  var listElm = document.getElementById('salesList');
+  var newRow = document.createElement('tr');
+  listElm.innerHTML = '';
+  newRow.innerHTML = '<th>Seller</th><th>Block Date</th><th>Winner</th><th>Sale Price</th>';
+  listElm.appendChild(newRow);
+  if (data['results'].length > 0) {
+    data['results'].forEach((sale) => {
+      var newRow = document.createElement('tr');
+      var addr = sale[3].substring(0, 6) + '...' + sale[3].substring(38, 42);
+      var winner = sale[5].substring(0, 6) + '...' + sale[5].substring(38, 42);
+      var lDate = dateConverter(sale[4]);
+      switch (sale[0]) {
+          case 'harmony':
+              token = 'jewel';
+              break;
+          case 'dfkchain':
+              token = 'crystal';
+              break;
+          case 'klaytn':
+              token = 'jade';
+              break;
+          default:
+              tokens = {}
+      }
+      var salePrice = sale[6];
+      newRow.innerHTML = `<td title="${sale[3]}" onclick="copyTitle(event);whoDis('${sale[3]}', event);" style="cursor: pointer;">${addr}</td><td>${lDate}</td><td title="${sale[5]}" onclick="copyTitle(event);whoDis('${sale[5]}', event);" style="cursor: pointer;">${winner}</td><td><img style="max-width:16px;" src="/static/images/${token}-perspective.png" />${salePrice.toFixed(1)}</td>`;
+      listElm.appendChild(newRow);
+    });
+  } else {
+    var newRow = document.createElement('tr');
+    newRow.innerHTML = '<td colspan=4>None Found</td>';
+    listElm.appendChild(newRow);
+  }
+  var waitElm = document.getElementById('medBusyWait');
+  waitElm.style.display = 'none';
+}
+function loadSummons() {
+  var waitElm = document.getElementById('medBusyWait');
+  waitElm.style.display = 'block';
+  // lookup summon history
+  var request = new XMLHttpRequest();
+  request.open('POST', `/hero/${heroIdLong}/history/summons?order=desc`, true);
+  request.onload = function() {
+    if (!request.status || (request.status >= 400)) {
+      alert('Failed to load summons.');
+    } else {
+      var resp = JSON.parse(request.responseText);
+      if ('error' in resp) {
+        document.getElementById('summonList').innerHTML = resp['error'];
+      } else {
+        dataLoaded['summons'] = resp['results'].length;
+        summonsTable(resp);
+      }
+    }
+  };
+  request.send();
+}
+function summonsTable(data) {
+  var listElm = document.getElementById('summonsList');
+  var newRow = document.createElement('tr');
+  listElm.innerHTML = '';
+  newRow.innerHTML = '<th>Enh.</th><th>owner</th><th>Block Time</th><th>New Hero</th><th>Summoner</th><th>Assistant</th>';
+  listElm.appendChild(newRow);
+  if (data['results'].length > 0) {
+    data['results'].forEach((summon) => {
+      var newRow = document.createElement('tr');
+      var addr = summon[3].substring(0, 6) + '...' + summon[3].substring(38, 42);
+      var lDate = timeConverter(summon[4]);
+      switch (summon[0]) {
+          case 'harmony':
+              tokens = HARMONY_TOKENS;
+              break;
+          case 'dfkchain':
+              tokens = DFKCHAIN_TOKENS;
+              break;
+          case 'klaytn':
+              tokens = KLAYTN_TOKENS;
+              break;
+          default:
+              tokens = {}
+      }
+      var stone = summon[6];
+      if (summon[6] == undefined) {
+        stone = '0x0000000000000000000000000000000000000000';
+      }
+      newHero = summon[5];
+      if (summon[5] > 2000000000000) {
+        newHero = 'SD-' + (summon[5] - 2000000000000);
+      } else if (summon[5] > 1000000000000) {
+        newHero = 'CV-' + (summon[5] - 1000000000000);
+      }
+      summoner = summon[7];
+      if (summon[7] > 2000000000000) {
+        summoner = 'SD-' + (summon[7] - 2000000000000);
+      } else if (summon[7] > 1000000000000) {
+        summoner = 'CV-' + (summon[7] - 1000000000000);
+      }
+      assistant = summon[8];
+      if (summon[8] > 2000000000000) {
+        assistant = 'SD-' + (summon[8] - 2000000000000);
+      } else if (summon[8] > 1000000000000) {
+        assistant = 'CV-' + (summon[8] - 1000000000000);
+      }
+      newRow.innerHTML = `<td><img style="max-width: 16px;" src="/static/images/items/${tokens[stone]}.gif" title="${tokens[stone]}" /></td><td title="${summon[3]}" onclick="copyTitle(event);whoDis('${summon[3]}', event);" style="cursor: pointer;">${addr}</td><td>${lDate}</td><td><a href="/hero/${summon[5]}">${newHero}</a></td><td><a href="/hero/${summon[7]}">${summoner}</a> <img style="max-width:16px;" src="/static/images/items/gaias-tear.png" />${summon[9]}</td><td><a href="/hero/${summon[8]}">${assistant}</a> <img style="max-width:16px;" src="/static/images/items/gaias-tear.png" />${summon[10]}</td>`;
+      listElm.appendChild(newRow);
+    });
+  } else {
+    var newRow = document.createElement('tr');
+    newRow.innerHTML = '<td colspan=4>None Found</td>';
+    listElm.appendChild(newRow);
+  }
+  var waitElm = document.getElementById('medBusyWait');
+  waitElm.style.display = 'none';
+}
+function addBadge(badge) {
+  contElm = document.getElementById('heroBadges');
+  badgeElm = document.createElement('img');
+  badgeElm.src = `/static/images/${badge}`;
+  badgeElm.style.width = '64px';
+  badgeElm.style.padding = '8px';
+  contElm.appendChild(badgeElm);
+}
+</script>
+<a href="/" title="Return to Home"><div id="pageTitle"><div>DFK History</div><img style="position:relative;left:-8px;top:-8px;" src="/static/images/line.png" /></div></a>
+<div id="heroGraphic">
+  <div style="background-image: url(/static/images/board_frame_left.png);position: absolute;top:48;left:0;width:12px;height:530px;background-repeat: repeat;"></div>
+  <img src="/static/images/board_frame_top_left.png" style="position: absolute;top:0;left:0;" />
+  <div style="background-image: url(/static/images/board_frame_top.png);position: absolute;top:0;left:48;width:816px;height:12px;background-repeat: repeat;"></div>
+  <img src="/static/images/board_frame_top_right.png" style="position: absolute;top:0;left:864;" />
+  <div style="background-image: url(/static/images/npcName_left.png);position: absolute;top:32;left:96;height:58px;width:116px;"></div>
+  <div style="background-image: url(/static/images/npcName_middle.png);position: absolute;top:32;left:206;height:58px;width:420px;"><span id="heroName" class="contTitle" style="margin-top:-4px;"></span></div>
+  <div style="background-image: url(/static/images/npcName_right.png);position: absolute;top:32;left:626;height:58px;width:116px;"></div>
+  <img id="heroGender" src="/static/images/jewel-card-icon.png" style="position: absolute;width:12px;left:140;top:48"/>
+  <img id="heroElement" src="/static/images/jewel-card-icon.png" style="position: absolute;width:12px;left:140;top:64"/>
+  <div id="heroGen" class="tshadow" style="font-size:32px;font-weight:bold;position: absolute;top:40;left:790;"></div>
+  <div id="heroBadges" style="position:absolute;top:90;left:790;width:80px;"></div>
+  <a href="https://www.adfk.app/heroes/{{ heroIdLong }}" target="_blank"><div id="heroImage" style="position:absolute;top:150;left:450;height: 250px;vertical-align: bottom;" title="click to view genetics on ADFK"><img src="https://hero-generator-mhpyphgqca-uc.a.run.app/image/{{ heroIdLong }}" style="height: 250px;image-rendering:pixelated;" /><img src="/static/images/adfk.png" style="float:left;opacity: 60%;padding-top:200px;"/></div></a>
+  <div class="tshadow" style="position: absolute;left:750;top:480;"><span style="font-weight: bold;">lvl</span><span id="heroLevel" style="font-size:96px;font-weight: bolder;"></span></div>
+  <div class="tshadow" style="position:absolute;top:520;left:64;font-size:32px;font-weight: bold;"><img id="heroRarity" style="width: 30px;margin-bottom:-8px;padding-right: 8px;" src="/static/images/rarity-common.png" /><span id="heroJobs"></span></div>
+  <img src="/static/images/board_frame_bottom_left.png" style="position: absolute;top:564;left:0;" />
+  <div style="background-image: url(/static/images/board_frame_right.png);position: absolute;top:48;left:900;width:12px;height:518px;background-repeat: repeat;"></div>
+  <img src="/static/images/board_frame_bottom_right.png" style="position: absolute;top:564;left:864;" />
+  <div style="background-image: url(/static/images/board_frame_bottom.png);position: absolute;top:600;left:48;width:816px;height:12px;background-repeat: repeat;"></div>
+</div>
+
+<div id="dataContainer" class="infoContainer">
+  <div id="heroDataToggle" class="headerToggle">
+    <button id="eventsHeader" class="toggleButton" title="View Life Events">Events</button>
+    <button id="levelsHeader" class="toggleButton" title="View Level Ups">Levels</button>
+    <button id="salesHeader" class="toggleButton" title="View Sales">Sales</button>
+    <button id="summonsHeader" class="toggleButton" title="View Summons">Summons</button>
+  </div>
+  <div id="heroData" style="margin: 12px;">
+    <img style="width: 100%" src="/static/images/parchment-top.png" />
+    <div class="scrollBack">
+      <table id="eventsList" class="heroTable"><tr><th></th><th>owner</th><th>Block Date</th><th>Event</th></tr></table>
+      <table id="levelsList" class="heroTable"><tr><th>Enh.</th><th>owner</th><th>Block Date</th><th>To Level</th><th>Bonus Choices</th><th>Stat Ups</th></tr></table>
+      <table id="salesList" class="heroTable"><tr><th>Seller</th><th>Block Date</th><th>Winner</th><th>Sale Price</th></tr></table>
+      <table id="summonsList" class="heroTable"><tr><th>Enh.</th><th>owner</th><th>Block Time</th><th>New Hero</th><th>Summoner</th><th>Assistant</th></tr></table>
+      <div id="medBusyWait"><div id="animate1"><div id="animate1Img"><img src="/static/images/swamp-front.gif" /></div></div></div>
+    </div>
+    <img style="width: 100%" src="/static/images/parchment-bottom.png" />
+  </div>
+</div>
+<div style="position:fixed;left:0;bottom:160px;margin:16px;"><a href="/player" title="Member Page"><img style="width: 64px;" src="/static/images/player.png" /></a></div>
+<div style="position:fixed;left:0;bottom:80px;margin:16px;"><a href="/pets" title="Return to Pet Selection"><img style="width: 64px;" src="/static/images/pets-icon.png" /></a></div>
+<div style="position:fixed;left:0;bottom:0px;margin:16px;"><a href="/heroes" title="Return to Hero Selection"><img style="width: 64px;" src="/static/images/oldportal.png" /></a></div>
+<div style="position:fixed;right:0;bottom:0px;margin:8px;"><a href="/about" title="FAQ"><img style="width: 64px;opacity: 65%;" src="/static/images/help.png" /></a></div>
+<h2 class="contTitle" style="display:none;"><img src="/static/images/gui_title_left.png" /><div id="eventsHeader" class="dataHeader" title="View Life Events"><span class="dataHeader" title="View Life Events">Events</span></div><img src="/static/images/gui_title_right.png" /></h2>
+</body>
+</html>

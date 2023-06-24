@@ -1,0 +1,401 @@
+<html lang="en">
+<head>
+  <title>Pet History</title>
+  <meta property="og:title" content="Pet History">
+  <meta property="og:description" content="Event history for the life of pet {{ petIdShort }}.">
+  <link rel="shortcut icon" href="/static/images/favicon.png" />
+  <meta property="og:image" content="https://pets.defikingdoms.com/image/{{ petIdLong }}">
+  <link rel="stylesheet" type="text/css" href="/static/herohistory.css" media="screen" />
+  <script src="/static/herohistory.js" type="text/javascript"></script>
+</head>
+<body>
+<script>
+var activeData = '{{ activeTab }}';
+var dataLoaded = {
+  'events': -1,
+  'sales': -1
+};
+const petIdLong = '{{ petIdLong }}';
+const petIdShort = '{{ petIdShort }}';
+window.onload = (event) => {
+  var dh = document.getElementById('petDataToggle');
+  dh.addEventListener("click", function(event) {
+    var elmId = event.target.id;
+    if (event.target.classList.contains('toggleButton')) {
+      var title = event.target.getAttribute("title");
+      switch (title) {
+        case "View Life Events":
+          switchView('events');
+          break;
+        case "View Sales":
+          switchView('sales');
+          break;
+        default:
+          //nada
+      }
+    }
+  });
+  loadPet();
+  switchView(activeData);
+};
+
+function switchView(dataList) {
+  [].forEach.call(document.querySelectorAll('.heroTable'), function (el) {
+    el.style.display = 'none';
+  });
+  [].forEach.call(document.querySelectorAll('.toggleButton'), function (el) {
+    el.classList.remove('toggleButtonActive')
+  });
+  var headElm = document.getElementById(`${dataList}Header`);
+  headElm.classList.add('toggleButtonActive');
+  var showElm = document.getElementById(`${dataList}List`);
+  showElm.style.display = 'table';
+  if (dataLoaded[dataList] < 0) {
+    switch (dataList) {
+      case 'events':
+        loadLifeEvents();
+        break;
+      case 'sales':
+        loadSales();
+        break;
+      default:
+        console.log('invalid data type');
+    }
+  }
+  activeData = dataList;
+}
+function loadPet() {
+  // load basic Metadata
+  var request = new XMLHttpRequest();
+  request.open('GET', `https://pets.defikingdoms.com/token/${petIdLong}`, true);
+  request.onload = function() {
+    if (!request.status || (request.status >= 400)) {
+      alert('Failed to load pet meta data.');
+    } else {
+      var resp = JSON.parse(request.responseText);
+      if ('error' in resp) {
+        alert(resp['error']);
+      } else {
+        displayPet(resp);
+      }
+    }
+  };
+  request.send();
+}
+function displayPet(data) {
+  var petdata = data['data']
+  var bgElm = document.getElementById('petBgAnimation');
+  var fgElm = document.getElementById('petFgAnimation');
+  switch (petdata['background']) {
+    case 'Adelyn Side Street':
+      bgFrames = 0;
+      fgFrames = 0;
+      bgElm.style.backgroundImage = `url(/static/images/pet-backgrounds/townbg.png)`;
+      fgElm.style.backgroundImage = 'url(/static/images/pet-backgrounds/townfg.png)';
+      break;
+    case 'Reyalin Mountain Pass':
+      bgFrames = 0;
+      fgFrames = 7;
+      bgElm.style.backgroundImage = `url(/static/images/pet-backgrounds/cliffbg.png)`;
+      fgElm.style.backgroundImage = 'url(/static/images/pet-backgrounds/clifffg.png)';
+      break;
+    case 'Haywood Farmstead':
+      bgFrames = 0;
+      fgFrames = 12;
+      bgElm.style.backgroundImage = `url(/static/images/pet-backgrounds/farmbg.png)`;
+      fgElm.style.backgroundImage = 'url(/static/images/pet-backgrounds/farmfg.png)';
+      break;
+    case 'Forest Trail':
+      bgFrames = 5;
+      fgFrames = 7;
+      bgElm.style.backgroundImage = `url(/static/images/pet-backgrounds/forestbg.png)`;
+      fgElm.style.backgroundImage = 'url(/static/images/pet-backgrounds/forestfg.png)';
+      break;
+    case 'Inner Grove':
+      bgFrames = 0;
+      fgFrames = 13;
+      bgElm.style.backgroundImage = `url(/static/images/pet-backgrounds/grovebg.png)`;
+      fgElm.style.backgroundImage = 'url(/static/images/pet-backgrounds/grovefg.png)';
+      break;
+    case 'Vithraven Outskirts':
+      bgFrames = 0;
+      fgFrames = 0;
+      bgElm.style.backgroundImage = `url(/static/images/pet-backgrounds/icebg.png)`;
+      fgElm.style.backgroundImage = 'url(/static/images/pet-backgrounds/icefg.png)';
+      break;
+    case 'Path of Fire':
+      bgFrames = 4;
+      fgFrames = 4;
+      bgElm.style.backgroundImage = `url(/static/images/pet-backgrounds/lavabg.png)`;
+      fgElm.style.backgroundImage = 'url(/static/images/pet-backgrounds/lavafg.png)';
+      break;
+    case 'Vuhlmira Ruins':
+      bgFrames = 10;
+      fgFrames = 8;
+      bgElm.style.backgroundImage = `url(/static/images/pet-backgrounds/skycastlebg.png)`;
+      fgElm.style.backgroundImage = 'url(/static/images/pet-backgrounds/skycastlefg.png)';
+      break;
+    case 'Swamp of Eoxis':
+      bgFrames = 0;
+      fgFrames = 0;
+      bgElm.style.backgroundImage = `url(/static/images/pet-backgrounds/swampbg.png)`;
+      fgElm.style.backgroundImage = 'url(/static/images/pet-backgrounds/swampfg.png)';
+      break;
+    case 'Bloater Falls':
+      bgFrames = 4;
+      fgFrames = 0;
+      bgElm.style.backgroundImage = `url(/static/images/pet-backgrounds/waterfallbg.png)`;
+      fgElm.style.backgroundImage = 'url(/static/images/pet-backgrounds/waterfallfg.png)';
+      break;
+    default:
+      bgFrames = 0;
+      fgFrames = 0;
+      bgElm.style.backgroundImage = `url(/static/images/pet-backgrounds/plainsbg.png)`;
+      fgElm.style.backgroundImage = 'url(/static/images/pet-backgrounds/plainsfg.png)';
+  }
+  if (bgFrames > 0) {
+    bgElm.style.animation = `playpetbg${bgFrames} 3.5s steps(${bgFrames}) infinite`;
+  }
+  if (fgFrames > 0) {
+    fgElm.style.animation = `playpetbg${fgFrames} 3.5s steps(${fgFrames}) infinite`;
+  }
+  var petElm = document.getElementById('petAnimation');
+  petElm.style.backgroundImage = `url(${petdata['animation']})`;
+  var nameElm = document.getElementById('petName');
+  nameElm.innerHTML = data['name'];
+  var genElm = document.getElementById('petGen');
+  genElm.innerHTML = `Pool: ${petdata['pool']}`;
+  var elementElm = document.getElementById('petElement');
+  elementElm.src = `/static/images/pet-${petdata['element'].toLowerCase()}.png`;
+  var rarityElm = document.getElementById('petRarity');
+  rarityElm.src = `/static/images/rarity-pet-${petdata['rarity'].toLowerCase()}.png`;
+  if (petdata['rarity'] == 'Mythic') {
+    var contElm = document.getElementById('petContainer');
+    var mythicScreen = document.createElement('div');
+    mythicScreen.style.position = 'absolute';
+    mythicScreen.style.width = '360px';
+    mythicScreen.style.height = '360px';
+    mythicScreen.classList = 'mythic';
+    contElm.appendChild(mythicScreen);
+  }
+  addBonus(`gathering-${petdata['gatheringbonustype'].toLowerCase()}.png`, petdata['gatheringbonusrarity']);
+  if (petdata['craftingbonus'] != 'None') {
+    addBonus(`crafting-${petdata['craftingbonustype'].toLowerCase()}.png`, petdata['craftingbonusrarity']);
+  }
+  if (petdata['combatbonus'] != 'None') {
+    addBonus('combat.png', petdata['combatbonusrarity']);
+  }
+  var jobsElm = document.getElementById('petJobs');
+  scalarRange = PROF_BONUS_MAX_SCALAR[petdata['gatheringbonustype']][petdata['gatheringbonusrarity']][petdata['gatheringbonus']] - PROF_BONUS_MIN_SCALAR[petdata['gatheringbonustype']][petdata['gatheringbonusrarity']][petdata['gatheringbonus']];
+  scalarPercentOfRange = (petdata['gatheringbonusscalar'] - PROF_BONUS_MIN_SCALAR[petdata['gatheringbonustype']][petdata['gatheringbonusrarity']][petdata['gatheringbonus']]) / scalarRange * 100;
+  jobsElm.innerHTML = petdata['gatheringbonus'];
+  jobsElm.setAttribute('data-title', (PROF_BONUS_DESCRIPTIONS[petdata['gatheringbonustype']][petdata['gatheringbonus']]).replace('{0}', petdata['gatheringbonusscalar']));
+  var valueElm = document.getElementById('scalarValueBar');
+  valueElm.style.width = `${scalarPercentOfRange}%`;
+  valueElm.innerHTML = petdata['gatheringbonusscalar'];
+  scElm = document.getElementById('scalarContainer');
+  scElm.setAttribute('data-title', `Bonus value ${petdata['gatheringbonusscalar']} in range ${PROF_BONUS_MIN_SCALAR[petdata['gatheringbonustype']][petdata['gatheringbonusrarity']][petdata['gatheringbonus']]} to ${PROF_BONUS_MAX_SCALAR[petdata['gatheringbonustype']][petdata['gatheringbonusrarity']][petdata['gatheringbonus']]}`);
+}
+
+function loadLifeEvents() {
+  var waitElm = document.getElementById('medBusyWait');
+  waitElm.style.display = 'block';
+  // lookup pet life event history
+  var request = new XMLHttpRequest();
+  request.open('POST', `/pet/${petIdLong}/history/life`, true);
+  request.onload = function() {
+    if (!request.status || (request.status >= 400)) {
+      alert('Failed to load life events.');
+    } else {
+      var resp = JSON.parse(request.responseText);
+      if ('error' in resp) {
+        document.getElementById('lifeEventList').innerHTML = resp['error'];
+      } else {
+        dataLoaded['events'] = resp['results'].length;
+        lifeEventsTable(resp);
+      }
+    }
+  };
+  request.send();
+}
+function lifeEventsTable(data) {
+  var listElm = document.getElementById('eventsList').getElementsByTagName('tbody')[0];
+  listElm.deleteRow(0);
+  var newRow = listElm.insertRow(listElm.rows.length);
+  newRow.innerHTML = '<th></th><th>owner</th><th>Block Date</th><th>Event</th>';
+  var level = 1;
+  if (data['results'].length > 0) {
+    data['results'].forEach((lev) => {
+      var newRow = listElm.insertRow(listElm.rows.length);
+      var addr = lev[3];
+      if ( lev[3] != undefined && lev[3].length > 40 ) {
+        addr = lev[3].substring(0, 6) + '...' + lev[3].substring(38, 42);
+      }
+      var lDate = dateConverter(lev[4]);
+      var eventImage = '';
+      var eventName = lev[5];
+      var eventDetails = '';
+
+      if (lev[7] != undefined) {
+        var tier = lev[7];
+        eventImage = `<img style="max-width: 24px;" src="/static/images/items/egg${lev[6]}.png" title="${EGG_NAMES[lev[6]]}" />`;
+        eventName = `Hatched by <span title="${lev[3]}" onclick="copyTitle(event);whoDis('${lev[3]}', event);" style="cursor: pointer;font-weight:bold;">${addr}</span>`;
+        eventDetails = lev[3];
+      } else if (lev[5] == 'CompletedPetExchange') {
+        eventImage = '<img style="max-width: 24px;" src="/static/images/rip-badge.png" title="Pet released" />';
+        eventName = 'Pet released into the wild';
+        addBadge('rip-badge.png');
+      }
+      newRow.innerHTML = `<td>${eventImage}</td><td title="${lev[3]}" onclick="copyTitle(event);whoDis('${lev[3]}', event);" style="cursor: pointer;">${addr}</td><td>${lDate}</td><td title="${eventDetails}" onclick="copyTitle(event);" style="cursor: pointer;">${eventName}</td>`;
+    });
+  } else {
+    var newRow = document.createElement('tr');
+    newRow.innerHTML = '<td colspan=4>None Found</td>';
+    listElm.appendChild(newRow);
+  }
+  var waitElm = document.getElementById('medBusyWait');
+  waitElm.style.display = 'none';
+}
+function loadSales() {
+  var waitElm = document.getElementById('medBusyWait');
+  waitElm.style.display = 'block';
+  // lookup sales history
+  var request = new XMLHttpRequest();
+  request.open('POST', `/pet/${petIdLong}/history/sales`, true);
+  request.onload = function() {
+    if (!request.status || (request.status >= 400)) {
+      alert('Failed to load sales.');
+    } else {
+      var resp = JSON.parse(request.responseText);
+      if ('error' in resp) {
+        document.getElementById('saleList').innerHTML = resp['error'];
+      } else {
+        dataLoaded['sales'] = resp['results'].length;
+        salesTable(resp);
+      }
+    }
+  };
+  request.send();
+}
+function salesTable(data) {
+  var listElm = document.getElementById('salesList');
+  var newRow = document.createElement('tr');
+  listElm.innerHTML = '';
+  newRow.innerHTML = '<th>Seller</th><th>Block Date</th><th>Winner</th><th>Sale Price</th>';
+  listElm.appendChild(newRow);
+  if (data['results'].length > 0) {
+    data['results'].forEach((sale) => {
+      var newRow = document.createElement('tr');
+      var addr = sale[3].substring(0, 6) + '...' + sale[3].substring(38, 42);
+      var winner = sale[5].substring(0, 6) + '...' + sale[5].substring(38, 42);
+      var lDate = dateConverter(sale[4]);
+      switch (sale[0]) {
+          case 'harmony':
+              token = 'jewel';
+              break;
+          case 'dfkchain':
+              token = 'crystal';
+              break;
+          case 'klaytn':
+              token = 'jade';
+              break;
+          default:
+              tokens = {}
+      }
+      var salePrice = sale[6];
+      newRow.innerHTML = `<td title="${sale[3]}" onclick="copyTitle(event);whoDis('${sale[3]}', event);" style="cursor: pointer;">${addr}</td><td>${lDate}</td><td title="${sale[5]}" onclick="copyTitle(event);whoDis('${sale[5]}', event);" style="cursor: pointer;">${winner}</td><td><img style="max-width:16px;" src="/static/images/${token}-perspective.png" />${salePrice.toFixed(1)}</td>`;
+      listElm.appendChild(newRow);
+    });
+  } else {
+    var newRow = document.createElement('tr');
+    newRow.innerHTML = '<td colspan=4>None Found</td>';
+    listElm.appendChild(newRow);
+  }
+  var waitElm = document.getElementById('medBusyWait');
+  waitElm.style.display = 'none';
+}
+
+function addBadge(badge) {
+  contElm = document.getElementById('petBadges');
+  badgeElm = document.createElement('img');
+  badgeElm.src = `/static/images/${badge}`;
+  badgeElm.style.width = '64px';
+  badgeElm.style.padding = '8px';
+  contElm.appendChild(badgeElm);
+}
+function addBonus(badge, rarity) {
+  switch (rarity) {
+    case 'Mythic':
+      starHeight = '90';
+      break;
+    case 'Rare':
+      starHeight = '60';
+      break;
+    default:
+      starHeight = '30';
+  }
+  contElm = document.getElementById('petBonuses');
+  badgeCont = document.createElement('div');
+  badgeCont.style.width = '100px';
+  badgeCont.style.padding = '24px 0px 24px 0px';
+  badgeElm = document.createElement('img');
+  badgeElm.classList.add('ib');
+  badgeElm.src = `/static/images/${badge}`;
+  badgeElm.style.width = '64px';
+  badgeStarElm = document.createElement('div');
+  badgeStarElm.classList.add('ib');
+  badgeStarElm.style.width = '30px';
+  badgeStarElm.style.height = `${starHeight}px`;
+  badgeCont.appendChild(badgeStarElm);
+  badgeCont.appendChild(badgeElm);
+  contElm.appendChild(badgeCont);
+}
+</script>
+<a href="/" title="Return to Home"><div id="pageTitle"><div>DFK History</div><img style="position:relative;left:-8px;top:-8px;" src="/static/images/line.png" /></div></a>
+<div id="petGraphic" style="background-image: url(/static/images/wood_bg_tile.png)">
+  <div style="background-image: url(/static/images/board_frame_left.png);position: absolute;top:48;left:0;width:12px;height:530px;background-repeat: repeat;"></div>
+  <img src="/static/images/board_frame_top_left.png" style="position: absolute;top:0;left:0;" />
+  <div style="background-image: url(/static/images/board_frame_top.png);position: absolute;top:0;left:48;width:816px;height:12px;background-repeat: repeat;"></div>
+  <img src="/static/images/board_frame_top_right.png" style="position: absolute;top:0;left:864;" />
+  <div style="background-image: url(/static/images/npcName_left.png);position: absolute;top:32;left:96;height:58px;width:116px;"></div>
+  <div style="background-image: url(/static/images/npcName_middle.png);position: absolute;top:32;left:206;height:58px;width:500px;"><span id="petName" class="contTitle" style="margin-top:-4px;"></span></div>
+  <div style="background-image: url(/static/images/npcName_right.png);position: absolute;top:32;left:706;height:58px;width:116px;"></div>
+  <img id="petElement" src="/static/images/jewel-card-icon.png" style="position: absolute;width:32px;left:140;top:46"/>
+  <img id="petRarity" style="position: absolute;width:72px;left:800;top:500;" src="/static/images/rarity-pet-common.png" />
+  <div id="petGen" class="tshadow" style="font-size:16px;font-weight:bold;position: absolute;top:540;left:270;"></div>
+  <div id="petBonuses" style="position:absolute;top:100;left:20;width:100px;"></div>
+  <div id="petBadges" style="position:absolute;top:90;left:790;width:80px;"></div>
+  <div id="petBackground" style="position:absolute;top:280;left:300;height:360px;width:360px;"><div id="petBgAnimation"></div></div>
+  <div id="petForeground" style="position:absolute;top:280;left:300;height:360px;width:360px;"><div id="petFgAnimation"></div></div>
+  <a href="https://www.adfk.app/pets/{{ petIdLong }}" target="_blank"><div id="petImage" style="position:absolute;top:340;left:310;height:360px;" title="click to view pet on ADFK"><div id="petAnimation"><img src="/static/images/adfk.png" style="float:left;opacity: 60%;padding-top:200px;"/></div></div></a>
+  <div id="petContainer" style="position:absolute;top:112px;left:132px;height:360px;width:360px;"></div>
+  <div class="tshadow" style="position:absolute;top:130;left:580;font-size:24px;font-weight: bold;"><span id="petJobs"></span></div>
+  <div id="scalarContainer" class="rangeBar" style="position:absolute;top:160;left:580;font-size:18px;"><div id="scalarValueBar"></div></div>
+  <img src="/static/images/board_frame_bottom_left.png" style="position: absolute;top:564;left:0;" />
+  <div style="background-image: url(/static/images/board_frame_right.png);position: absolute;top:48;left:900;width:12px;height:518px;background-repeat: repeat;"></div>
+  <img src="/static/images/board_frame_bottom_right.png" style="position: absolute;top:564;left:864;" />
+  <div style="background-image: url(/static/images/board_frame_bottom.png);position: absolute;top:600;left:48;width:816px;height:12px;background-repeat: repeat;"></div>
+</div>
+
+<div id="dataContainer" class="infoContainer">
+  <div id="petDataToggle" class="headerToggle">
+    <button id="eventsHeader" class="toggleButton" style="width: calc(50% - 4px);" title="View Life Events">Events</button>
+    <button id="salesHeader" class="toggleButton" style="width: calc(50% - 4px);" title="View Sales">Sales</button>
+  </div>
+  <div id="petData" style="margin: 12px;">
+    <img style="width: 100%" src="/static/images/parchment-top.png" />
+    <div class="scrollBack">
+      <table id="eventsList" class="heroTable"><tr><th></th><th>player</th><th>Block Date</th><th>Event</th></tr></table>
+      <table id="salesList" class="heroTable"><tr><th>Seller</th><th>Block Date</th><th>Winner</th><th>Sale Price</th></tr></table>
+      <div id="medBusyWait"><div id="animate1"><div id="animate1Img"><img src="/static/images/swamp-front.gif" /></div></div></div>
+    </div>
+    <img style="width: 100%" src="/static/images/parchment-bottom.png" />
+  </div>
+</div>
+<div style="position:fixed;left:0;bottom:160px;margin:16px;"><a href="/player" title="Member Page"><img style="width: 64px;" src="/static/images/player.png" /></a></div>
+<div style="position:fixed;left:0;bottom:80px;margin:16px;"><a href="/pets" title="Return to Pet Selection"><img style="width: 64px;" src="/static/images/pets-icon.png" /></a></div>
+<div style="position:fixed;left:0;bottom:0px;margin:16px;"><a href="/heroes" title="Return to Hero Selection"><img style="width: 64px;" src="/static/images/oldportal.png" /></a></div>
+<div style="position:fixed;right:0;bottom:0px;margin:8px;"><a href="/about" title="FAQ"><img style="width: 64px;opacity: 65%;" src="/static/images/help.png" /></a></div>
+<h2 class="contTitle" style="display:none;"><img src="/static/images/gui_title_left.png" /><div id="eventsHeader" class="dataHeader" title="View Life Events"><span class="dataHeader" title="View Life Events">Events</span></div><img src="/static/images/gui_title_right.png" /></h2>
+</body>
+</html>

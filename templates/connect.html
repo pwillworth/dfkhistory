@@ -1,0 +1,450 @@
+<html lang="en">
+<head>
+  <title>DFK History Member Connect</title>
+  <meta property="og:title" content="DFK History Member Connect">
+  <meta property="og:description" content="Connect to join DFK History and use member features.">
+  <link rel="shortcut icon" href="/static/images/favicon.png" />
+  <meta property="og:image" content="/static/images/favicon.png">
+  <link rel="stylesheet" type="text/css" href="/static/herohistory.css" media="screen" />
+  <script src="/static/herohistory.js" type="text/javascript"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.7.4-rc.1/web3.min.js"></script>
+</head>
+<body>
+<script>
+const tokenRatios = {
+  '0x19Aac5f612f524B754CA7e7c41cbFa2E981A4432': 0.15, //klay
+  '0xCCb93dABD71c8Dad03Fc4CE5559dC3D89F67a260': 0.20, //dfkJewel
+  '0x30C103f8f5A3A732DFe2dCE1Cc9446f545527b43': 0.20, //klayJewel
+  '0x04b9dA42306B023f3572e106B11D82aAd9D32EBb': 0.02, //crystal
+  '0xB3F5867E277798b50ba7A71C0b24FDcA03045eDF': 0.02 //jabe
+}
+const dfkcTokens = {
+  '0xCCb93dABD71c8Dad03Fc4CE5559dC3D89F67a260': 'jewelCV',
+  '0x04b9dA42306B023f3572e106B11D82aAd9D32EBb': 'crystalCV'
+}
+const klayTokens = {
+  '0x30C103f8f5A3A732DFe2dCE1Cc9446f545527b43': 'jewelSD',
+  '0xB3F5867E277798b50ba7A71C0b24FDcA03045eDF': 'jadeSD',
+}
+
+window.onload = (event) => {
+  var wa = document.getElementById('walletAdd');
+  wa.addEventListener("input", function(event) {
+    var val = event.target.value;
+    if (val.length == 42) {
+      addWallet(val);
+    }
+  });
+  sid = getCookie('sid', '');
+  isConnected();
+  window.web3 = new Web3(window.ethereum);
+  switchView('{{ memberState }}');
+}
+window.ethereum.on('accountsChanged', function (accounts) {
+  window.location.reload();
+});
+ethereum.on('chainChanged', (chainId) => {
+  window.location.reload();
+});
+function popupPayment() {
+  switch (ethereum.networkVersion) {
+    case '53935':
+      tokens = dfkcTokens;
+      je = document.getElementById('jewelCV')
+      je.checked = "checked"
+      break;
+    case '8217':
+      tokens = klayTokens;
+      je = document.getElementById('jewelSD')
+      je.checked = "checked"
+      break;
+    default:
+      console.log(`unsupported chain ${ethereum.networkVersion}`);
+      var statusElm = document.getElementById('chainStatus');
+      statusElm.innerHTML = 'Error: Must be connected to DFKChain or Klaytn.';
+      tokens = {};
+  }
+  for (const [key, value] of Object.entries(tokens)) {
+    var opt = document.getElementById(value);
+    var lbl = document.getElementById('l'+value);
+    opt.classList.remove('hide');
+    lbl.classList.remove('hide');
+  }
+  updateBalanceInfo();
+  calcTimeToAdd();
+  showWindow('paymentDialog');
+}
+function popupWallets() {
+  showWindow('walletsDialog');
+}
+function switchView(memberState) {
+  //0=not loggged in, 1=inactive, 2=active
+  memberState = memberState.toString();
+  console.log(`switching state ${memberState}`);
+  switch (memberState) {
+    case '2':
+      document.getElementById('groupPage').style.display = 'block';
+      document.getElementById('subscribePage').style.display = 'none';
+      document.getElementById('connectPage').style.display = 'none';
+      document.getElementById('loginPage').style.display = 'none';
+      document.getElementById('benefitsPage').style.display = 'none';
+      document.getElementById('benefitsHeader').style.display = 'none';
+      break;
+    case '1':
+      document.getElementById('groupPage').style.display = 'none';
+      document.getElementById('subscribePage').style.display = 'block';
+      document.getElementById('connectPage').style.display = 'none';
+      document.getElementById('loginPage').style.display = 'none';
+      document.getElementById('benefitsPage').style.display = 'block';
+      document.getElementById('benefitsHeader').style.display = 'block';
+      break;
+    default:
+      document.getElementById('groupPage').style.display = 'none';
+      document.getElementById('subscribePage').style.display = 'none';
+      if (isConnected()) {
+        document.getElementById('connectPage').style.display = 'none';
+        document.getElementById('loginPage').style.display = 'block';
+      } else {
+        document.getElementById('connectPage').style.display = 'block';
+        document.getElementById('loginPage').style.display = 'none';
+      }
+      document.getElementById('benefitsPage').style.display = 'block';
+      document.getElementById('benefitsHeader').style.display = 'block';
+      break;
+  }
+}
+function refreshLists() {
+
+}
+
+// preview balance of selected token
+async function updateBalanceInfo() {
+  var tokenElm = document.querySelector('input[name="tokenSelect"]:checked');
+  var availableElm = document.getElementById('tokenAvailable');
+  availableElm.innerHTML = '-';
+  token = tokenElm.value;
+  if (['0xCCb93dABD71c8Dad03Fc4CE5559dC3D89F67a260','0x19Aac5f612f524B754CA7e7c41cbFa2E981A4432'].includes(token)) {
+    let result = await web3.eth.getBalance(selectedAccount);
+    availableElm.innerHTML = Number(web3.utils.fromWei(result.toString(), 'ether')).toFixed(2);
+  } else {
+    const contract = new web3.eth.Contract(balanceOfABI, token)
+    let result = await contract.methods.balanceOf(selectedAccount).call();
+    availableElm.innerHTML = Number(web3.utils.fromWei(result.toString(), 'ether')).toFixed(2);
+  }
+}
+
+// preview amount of time that will be added to subscription
+function calcTimeToAdd() {
+  var timeElm = document.getElementById('subTimeToAdd');
+  var tokenElm = document.querySelector('input[name="tokenSelect"]:checked');
+  var amountElm = document.getElementById('tokenAmount');
+  var newExpiresElm = document.getElementById('newExpires');
+  var ratioValue = tokenRatios[tokenElm.value];
+  var totalValue = amountElm.value * ratioValue;
+  var secondsToAdd = totalValue * 86400 * 4;
+  if (totalValue < 0.5) {
+    secondsToAdd = 0;
+  }
+  // increase ratio above certain amount
+  if (totalValue > 10) {
+    secondsToAdd = totalValue * 86400 * 6;
+  }
+  // Max 1 year
+  if (secondsToAdd > 31536000) {
+    secondsToAdd = 31536000;
+  }
+  var nowTime = new Date();
+  nowTime.setSeconds(nowTime.getSeconds() + secondsToAdd);
+  if (Number("{{ secondsLeft }}") > 0) {
+    nowTime.setSeconds(nowTime.getSeconds() + Number("{{ secondsLeft }}"));
+  }
+  timeElm.innerHTML = timeDescription(secondsToAdd);
+  newExpiresElm.innerHTML = nowTime.toLocaleString();
+  return secondsToAdd;
+}
+
+function timeDescription(seconds) {
+  if (seconds > 0) {
+		tmpDays = Math.floor(seconds / 86400)
+		tmpStr = ''
+		if (tmpDays > 0) {
+			if (tmpDays > 365) {
+				tmpStr = Math.floor(tmpDays / 365).toString() + " years, "
+				tmpDays = tmpDays % 365
+      }
+			tmpStr = tmpStr + tmpDays.toString() + " days"
+    } else if (seconds / 3600 >= 1) {
+			tmpStr = Math.floor(seconds/3600).toString() + " hours"
+    } else if (seconds / 60 >= 1) {
+			tmpStr = Math.floor(seconds/60).toString() + " minutes"
+    } else {
+			tmpStr = "less than a minute"
+    }
+		return tmpStr
+  } else {
+    return '-';
+  }
+}
+// Initiate payment tx for subscription8
+async function paySubscription() {
+  const donationAccount = '0xF4A6a8d2c9dDe9Fecd6020851c6212b43C20d97E';
+  var tokenElm = document.querySelector('input[name="tokenSelect"]:checked');
+  var amountElm = document.getElementById('tokenAmount');
+  var sendElm = document.getElementById('tokenSend');
+  let txValue = '0';
+  let txTo = donationAccount;
+  let data = '0x00';
+
+  var addTime = calcTimeToAdd();
+  if (addTime == 0) {
+    alert('The amount entered is below the minimum amount to add subscription time.');
+    return;
+  }
+  sendElm.disabled = true;
+  if ( ['0xCCb93dABD71c8Dad03Fc4CE5559dC3D89F67a260','0x19Aac5f612f524B754CA7e7c41cbFa2E981A4432'].includes(tokenElm.value) ) {
+    txValue = web3.utils.toWei(amountElm.value, 'ether');
+    var transactionParameters = {
+      to: txTo,
+      from: ethereum.selectedAddress,
+      value: web3.utils.toHex(txValue),
+      chainId: web3.utils.toHex(ethereum.networkVersion),
+    };
+  } else {
+    let contract = new web3.eth.Contract(transferABI, tokenElm.value, { from: selectedAccount });
+    let amount = web3.utils.toHex(web3.utils.toWei(amountElm.value));
+    data = contract.methods.transfer(donationAccount, amount).encodeABI();
+    txTo = tokenElm.value;
+    var transactionParameters = {
+      to: txTo,
+      from: ethereum.selectedAddress,
+      value: web3.utils.toHex(txValue),
+      data: data,
+      chainId: web3.utils.toHex(ethereum.networkVersion),
+    };
+  }
+
+  var statusElm = document.getElementById('validateStatus');
+  statusElm.innerHTML = 'Waiting for confirmation...';
+  statusElm.style.display = 'block';
+  // txHash is a hex string
+  // As with any RPC call, it may throw an error
+  var txHash = await ethereum.request({
+    method: 'eth_sendTransaction',
+    params: [transactionParameters],
+  })
+  .then((txHash) => checkTx(txHash))
+  .catch((err) => {
+    statusElm.innerHTML = 'Transaction Rejected';
+    sendElm.disabled = false;
+  });
+}
+function checkTx(txHash) {
+  let statusElement = document.getElementById("validateStatus")
+  statusElement.innerHTML = "Waiting for transaction..."
+
+  // Wait for tx to complete on chain before completing
+  let interval = setInterval(() => {
+      web3.eth.getTransactionReceipt(txHash, (err, receipt) => {
+        if (receipt) {
+            if (receipt.status === true) {
+                paymentComplete(txHash);
+            } else if (receipt.status === false) {
+                statusElement.innerHTML = "Transaction Failed"
+            }
+            clearInterval(interval)
+        }
+      });
+  }, 1000);
+}
+function paymentComplete(txHash) {
+  var statusElm = document.getElementById('validateStatus');
+  statusElm.innerHTML = 'Updating account...';
+  const account = web3.eth.accounts;
+  const wAddress = account.givenProvider.selectedAddress;
+  var network = '';
+  switch (ethereum.networkVersion) {
+    case '53935':
+      network = 'dfkchain';
+      break;
+    case '8217':
+      network = 'klaytn';
+      break;
+    default:
+      network = '';
+  }
+  var request = new XMLHttpRequest();
+  request.open('POST', `/validatePayment?account=${wAddress}&txHash=${txHash}&network=${network}`, true);
+  request.onload = function() {
+    if (!request.status || (request.status >= 400)) {
+      alert('Failed to validate due to server error.');
+    } else {
+      var resp = JSON.parse(request.responseText);
+      if ('error' in resp) {
+        statusElm.innerHTML = resp['error'];
+        var sendElm = document.getElementById('tokenSend');
+        sendElm.disabled = false;
+      } else {
+        location.reload();
+      }
+    }
+  };
+  request.send();
+}
+// Add wallet
+function addWallet(wallet) {
+  foundIt = false;
+  wallets = document.querySelectorAll('#playerWallets > div');
+  wallets.forEach(function (item) {
+    if ( item.innerHTML == wallet ) {
+      foundIt = true;
+    }
+  });
+  if ( foundIt == false ) {
+    var statusElm = document.getElementById('walletStatus');
+    statusElm.innerHTML = "Adding Wallet...";
+    var request = new XMLHttpRequest();
+    const rparams = `account=${selectedAccount}&wallet=${wallet}`;
+    request.open('POST', `/addWallet?${rparams}`, true);
+    request.onload = function() {
+      if (!request.status || (request.status >= 400)) {
+        alert('Failed to add due to server error.');
+      } else {
+        var resp = JSON.parse(request.responseText);
+        if ('error' in resp) {
+          alert(resp['error']);
+        } else {
+          pw = document.getElementById('playerWallets');
+          pw.insertAdjacentHTML('beforeEnd', `<div class='blockUserItem'>${wallet}<img src='/static/images/xRed24.png' alt='Remove' title='Remove' onclick='removeWallet(this);'></img></div>`);
+          aw = document.getElementById('walletAdd');
+          aw.value = '';
+        }
+      }
+      statusElm.innerHTML = '';
+    };
+    request.send();
+  }
+}
+function removeWallet(itemNode) {
+  var statusElm = document.getElementById('walletStatus');
+  statusElm.innerHTML = "Removing Wallet...";
+  const wallet = itemNode.parentNode.innerHTML.substr(0,42);
+  var request = new XMLHttpRequest();
+  request.open('POST', `/removeWallet?account=${selectedAccount}&wallet=${wallet}`, true);
+  request.onload = function() {
+    if (!request.status || (request.status >= 400)) {
+      alert('Failed to add due to server error.');
+    } else {
+      var resp = JSON.parse(request.responseText);
+      if ('error' in resp) {
+        alert(resp['error']);
+      } else {
+        itemNode.parentNode.remove();
+      }
+    }
+    statusElm.innerHTML = '';
+  };
+  request.send();
+}
+</script>
+<a href="/" title="Return to Home"><div id="pageTitle"><div>DFK History</div><img style="position:relative;left:-8px;top:-8px;" src="/static/images/line.png" /></div></a>
+<div style="float:right;" id="loginBlock"><input id="connectWallet" type="button" value="Connect Wallet" onclick="connect();" class="largeButton"><span id="member"></span><input id="loginButton" type="button" value="Login" onclick="login(true);" class="largeButton" style="display:none;"><input id="logoutButton" type="button" value="Logout" onclick="logout();" class="largeButton" style="display:none;"></div>
+<div id="connectContainer" class="infoContainer">
+  <div id="groupPage" style="margin: 12px;">
+    <h2>Member Tools</h2>
+    <table><tr>
+      <td><div style="margin:16px;"><a href="/playerfeed/{{ memberAccount }}" title="Launch Player Feed"><img style="width: 85px;" src="/static/images/feed.png" /></a></div>
+      <div style="text-align:center;font-weight: bold;">Player Feed</div></td>
+      <td><div style="margin:16px;"><a href="/player/{{ memberAccount }}" title="Launch Grouped Player History"><img style="width: 85px;" src="/static/images/groupHistory.png" /></a></div>
+      <div style="text-align:center;font-weight: bold;">Grouped History</div></td>
+    </tr></table>
+    <div class="dividingLine" style="margin:12px 0px;"></div>
+  </div>
+  <div class="reportPage" id="connectPage">
+    <h2 style="text-align: center;cursor: pointer;" onclick="connect();">Connect your wallet to get started.</h2>
+  </div>
+  <div class="reportPage" id="loginPage">
+    <h2 style="text-align: center;cursor: pointer;" onclick="login(true);">Login to activate your subscription.</h2>
+  </div>
+  <div class="reportPage" id="subscribePage">
+    <h2 style="text-align: center;">You do not have a current subscription.</h2>
+  </div>
+  <div id="accountPage">
+    <div id="accountDetails">
+      {% if memberState > 0 %}
+          <div class="sectionHead"></div>
+          <h2>Your Account</h2>
+          {% if secondsLeft <= 0 %}
+          <div id="accountExpiration">Subscription Expired: <span style="font-weight:bold;">{{ expiryDescription }}</span></div>
+          {% elif secondsLeft > 0 %}
+          <div id="accountExpiration">Subscription Expires: <span style="font-weight:bold;">{{ expiryDescription }}</span></div>
+          {% else %}
+          <div id="accountExpiration">Not Subscribed</div>
+          {% endif %}
+          <div style="margin:8px;width:100%">
+            <input id="popupPayment" type="button" value="Add Time Now" class="largeButton" onclick="popupPayment();" />
+            <input id="popupWallets" type="button" value="Manage Wallets" class="largeButton" onclick="popupWallets();" />
+          </div>
+      {% else %}
+          <div id="accountExpiration">Login first to access your settings.</div>
+      {% endif %}
+    </div>
+  </div>
+  <div class="sectionHead"></div>
+  <h3 id="benefitsHeader">Connect and subscribe to enjoy these benefits:</h3>
+  <div id="benefitsPage">
+    <ul>
+      <li>Wallet Activity Feed: Easily access recent events for heroes and pets in your account(s) in a chronological feed.</li>
+      <li>Wallet Recent Hero Activity By Type: View recent hero events for your account(s) grouped by type, similar to hero view.</li>
+      <li>Manage Wallets: Define up to 16 wallets to include in your Account Feed/Activity views.</li>
+    </ul>
+  </div>
+</div>
+<div style="position:fixed;left:0;bottom:0px;margin:16px;"><a href="/heroes" title="Return to Hero Selection"><img style="width: 64px;" src="/static/images/oldportal.png" /></a></div>
+<div style="position:fixed;left:0;bottom:80px;margin:16px;"><a href="/pets" title="Return to Pet Selection"><img style="width: 64px;" src="/static/images/pets-icon.png" /></a></div>
+<div style="position:fixed;right:0;bottom:0px;margin:8px;"><a href="/about" title="FAQ"><img style="width: 64px;opacity: 65%;" src="/static/images/help.png" /></a></div>
+<div id="paymentDialog" class="window">
+  <div class="formClose" onclick="hideWindow('paymentDialog');"></div>
+  <div class="boxHeader" style="margin-top:18px;margin-bottom:12px;">Make Subscription Payment</div>
+  <span id="chainStatus" style="color: darkred;"></span>
+  <form>
+      <div class="ib" style="width:200px;"><fieldset class="multiToggle">
+          <input class="hide" type="radio" name="tokenSelect" id="jewelCV" value="0xCCb93dABD71c8Dad03Fc4CE5559dC3D89F67a260" checked="checked" onchange="updateBalanceInfo();calcTimeToAdd();">
+          <label class="hide" for="jewelCV" id="ljewelCV"><img src="/static/images/jewel.png" style="width: 32px;position:relative;top:8px;" title="Jewel on DFK Chain"/></label>
+          <input class="hide" type="radio" name="tokenSelect" id="crystalCV" value="0x04b9dA42306B023f3572e106B11D82aAd9D32EBb" onchange="updateBalanceInfo();calcTimeToAdd();">
+          <label class="hide" for="crystalCV" id="lcrystalCV"><img src="/static/images/crystal.png" style="width: 32px;position:relative;top:8px;" title="Crystal" /></label>
+          <input class="hide" type="radio" name="tokenSelect" id="jewelSD" value="0x30C103f8f5A3A732DFe2dCE1Cc9446f545527b43" onchange="updateBalanceInfo();calcTimeToAdd();">
+          <label class="hide" for="jewelSD" id="ljewelSD"><img src="/static/images/jewel.png" style="width: 32px;position:relative;top:8px;" title="Jewel on Klaytn" /></label>
+          <input class="hide" type="radio" name="tokenSelect" id="jadeSD" value="0xB3F5867E277798b50ba7A71C0b24FDcA03045eDF" onchange="updateBalanceInfo();calcTimeToAdd();">
+          <label class="hide" for="jadeSD" id="ljadeSD"><img src="/static/images/jade.png" style="width: 32px;position:relative;top:8px;" title="Jade" /></label>
+      </fieldset></div>
+      <div class="ib"><span id="tokenAvailable" style="color:green;">-</span><span> Available</span></div>
+      <div class="dividingLine" style="margin-top:24px;"></div>
+      <div class="ib" style="width:120px;"><span style="font-weight:bold;">Pay Amount: </span><input type="text" id="tokenAmount" size="10" onkeyup="calcTimeToAdd();" /></div>
+      <div class="ib" style="width:200px;"><span style="font-weight:bold;">Time Added: </span><span id="subTimeToAdd"></span></div>
+      <div class="ib" style="width:200px;"><span style="font-weight:bold;">New Expiration: </span><span id="newExpires"></span></div>
+      <div style="text-align:center;"><input id="tokenSend" type="button" value="Add" class="largeButton" onclick="paySubscription();" /></div>
+  </form>
+  <div class="dividingLine" style="margin:12px 0px;"></div>
+  <div id="validateStatus" style="width: 100%;"></div>
+  <h3 class="boxHeader">Validate Manual Payment
+      <img src="/static/images/help.png" style="max-width: 22px;float:right;" title="If you have made a donation to the donation address in the past you can credit that to your subscription here by entering the transaction hash and clicking validate.  Make sure you are connected to the chain where you made the payment first."/>
+  </h3>
+  <input id="txHash" type="text" style="width:100%;" placeholder="tx hash 0x..." />
+  <div style="width: 100%;text-align:center;margin: 8px;">
+  <input id="tokenSend" type="button" value="Validate" class="largeButton" onclick="paymentComplete(document.getElementById('txHash').value);" />
+  </div>
+</div>
+<div id="walletsDialog" class="window">
+  <div class="formClose" onclick="hideWindow('walletsDialog');"></div>
+  <div class="boxHeader" style="margin-top:18px;margin-bottom:12px;">Wallet Management</div>
+  <div title="List any additional wallets activity to include in your player history features.">Add Other Wallets: <input id="walletAdd" type="text" size="42" /></div>
+  <div id="playerWallets" class="inlineItemBlockList" style="margin-top:12px;height:300px;overflow-y:scroll;">
+{% for wallet in playerWallets %}
+    <div class="blockUserItem">{{ wallet }}<img src='/static/images/xRed24.png' alt='Remove' title='Remove' onclick='removeWallet(this);'></img></div>
+{% endfor %}          
+  </div>
+  <div id="walletStatus" style="width: 100%;"></div>
+</div>
+<div id="mask" onclick="hideWindow('paymentDialog');hideWindow('walletsDialog');"></div>
+</body>
+</html>

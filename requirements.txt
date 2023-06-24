@@ -1,0 +1,5 @@
+flask
+psycopg2
+jinja2
+requests
+web3

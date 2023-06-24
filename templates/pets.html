@@ -1,0 +1,84 @@
+<html lang="en">
+<head>
+  <title>DFK History</title>
+  <meta property="og:title" content="DFK History">
+  <meta property="og:description" content="DFK Kingdoms game event history.">
+  <link rel="shortcut icon" href="/static/images/favicon.png" />
+  <meta property="og:image" content="/static/images/favicon.png">
+  <link rel="stylesheet" type="text/css" href="/static/herohistory.css" media="screen" />
+  <script src="/static/herohistory.js" type="text/javascript"></script>
+</head>
+<body>
+<script>
+window.onload = (event) => {
+    const node = document.getElementById("petId");
+    node.addEventListener("keyup", function(event) {
+        if (event.key === "Enter") {
+            goPet();
+        }
+        checkId(event);
+    });
+};
+function checkId(event) {
+  var petId = event.target.value;
+  if ( petId > 2000000000000) {
+    var hForm = document.forms['petForm'];
+    var optElm = hForm.elements['realmOption'];
+    optElm.value = 'SER2';
+    return;
+  }
+  if ( petId > 1000000000000) {
+    var hForm = document.forms['petForm'];
+    var optElm = hForm.elements['realmOption'];
+    optElm.value = 'CRY';
+    return;
+  }
+}
+function goPet() {
+  var realm = document.querySelector('input[name="realmOption"]:checked').value;
+  var petId = document.getElementById('petId').value;
+  var heroPrefix = "";
+  switch ( realm ) {
+    case "SER2":
+        realmPrefix = "SD-";
+        break;
+    case "CRY":
+        realmPrefix = "CV-";
+        break;
+    default:
+        realmPrefix = "";
+  }
+  if ( Number.isInteger(petId) ) {
+    return 1;
+  }
+  if ( petId > 1000000000000 ) {
+    document.location = `/pet/${petId}`;
+  } else {
+    document.location = `/pet/${realmPrefix}${petId}`;
+  }
+}
+</script>
+<a href="/" title="Return to Home"><div id="pageTitle"><div>DFK History</div><img style="position:relative;left:-8px;top:-8px;" src="/static/images/line.png" /></div></a>
+<div id="launchContainer">
+    <img src="/static/images/blubs.gif" style="width:140px;image-rendering: pixelated;"/>
+    <h2 id="selectTitlePets"><div>Enter a Pet # to view its history.</div></h2>
+    <form id="petForm">
+    <fieldset class="multiToggle">
+    <input type="radio" name="realmOption" id="SER" value="SER" checked="checked">
+    <label for="SER"><img src="/static/images/jewel-card-icon.png" style="width: 32px;" title="Original Harmony Serendale Pets"/></label>
+    <input type="radio" name="realmOption" id="CRY" value="CRY">
+    <label for="CRY"><img src="/static/images/crystal-card-icon.png" style="width: 32px;" title="Crystalvale Pets" /></label>
+    <input type="radio" name="realmOption" id="SER2" value="SER2">
+    <label for="SER2"><img src="/static/images/jade-card-icon.png" style="width: 32px;" title="Serendale 2 on Klaytn Pets" /></label>
+    </fieldset>
+    <input type="text" id="petId" name="petId" size="10" placeholder="#" />
+    <div style="text-align:center;">
+    <input type="button" value="View" class="largeButton" onclick="goPet();"/>
+    </div>
+    </form>
+</div>
+<div style="position:fixed;left:0;bottom:80px;margin:16px;"><a href="/player" title="Player History"><img style="width: 64px;" src="/static/images/player.png" /></a></div>
+<div style="position:fixed;left:0;bottom:0px;margin:16px;"><a href="/heroes" title="Return to Hero Selection"><img style="width: 64px;" src="/static/images/oldportal.png" /></a></div>
+<div style="position:fixed;right:0;bottom:0px;margin:8px;"><a href="/about" title="FAQ"><img style="width: 64px;opacity: 65%;" src="/static/images/help.png" /></a></div>
+</body>
+</html>

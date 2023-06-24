@@ -1,0 +1,669 @@
+<html lang="en">
+<head>
+  <title>Player History</title>
+  <meta property="og:title" content="Player History">
+  <meta property="og:description" content="Event history for the DFK Player {{ playerid }}.">
+  <link rel="shortcut icon" href="/static/images/favicon.png" />
+  <meta property="og:image" content="/static/images/favicon.png">
+  <link rel="stylesheet" type="text/css" href="/static/herohistory.css" media="screen" />
+  <script src="/static/herohistory.js" type="text/javascript"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.7.4-rc.1/web3.min.js"></script>
+</head>
+<body>
+<script>
+var playerId = '{{ playerId }}';
+var playerName = 'unknown';
+var activeData = '{{ activeTab }}';
+var dataLoaded = {
+  'events': -1,
+  'levels': -1,
+  'sales': -1,
+  'summons': -1,
+  'hatches': -1
+};
+var dataLimits = {
+  'events': -1,
+  'levels': -1,
+  'sales': -1,
+  'summons': -1,
+  'hatches': -1
+};
+window.onload = (event) => {
+  var dh = document.getElementById('heroDataToggle');
+  dh.addEventListener("click", function(event) {
+    var elmId = event.target.id;
+    if (event.target.classList.contains('toggleButton')) {
+      var title = event.target.getAttribute("title");
+      switch (title) {
+        case "View Life Events":
+          switchView('events');
+          break;
+        case "View Level Ups":
+          switchView('levels');
+          break;
+        case "View Sales":
+          switchView('sales');
+          break;
+        case "View Summons":
+          switchView('summons');
+          break;
+        case "View Hatches":
+          switchView('hatches');
+          break;
+        default:
+          //nada
+      }
+    }
+  });
+  whoDis('{{ playerId }}', new Event('load'));
+  sid = getCookie('sid', '');
+  isConnected();
+  window.web3 = new Web3(window.ethereum);
+  switchView(activeData);
+};
+window.ethereum.on('accountsChanged', function (accounts) {
+  window.location.reload();
+});
+ethereum.on('chainChanged', (chainId) => {
+  window.location.reload();
+});
+function switchView(dataList) {
+  [].forEach.call(document.querySelectorAll('.heroTable'), function (el) {
+    el.style.display = 'none';
+  });
+  [].forEach.call(document.querySelectorAll('.toggleButton'), function (el) {
+    el.classList.remove('toggleButtonActive')
+  });
+  var headElm = document.getElementById(`${dataList}Header`);
+  headElm.classList.add('toggleButtonActive');
+  var showElm = document.getElementById(`${dataList}List`);
+  showElm.style.display = 'table';
+  if (dataLoaded[dataList] < 0) {
+    switch (dataList) {
+      case 'events':
+        loadLifeEvents();
+        break;
+      case 'levels':
+        loadLevelUps();
+        break;
+      case 'sales':
+        loadSales();
+        break;
+      case 'summons':
+        loadSummons();
+        break;
+      case 'hatches':
+        loadHatches();
+        break;
+      default:
+        console.log('invalid data type');
+    }
+  }
+  activeData = dataList;
+}
+function loadMore() {
+  if (isConnected()) {
+    switch (activeData) {
+      case 'events':
+        loadLifeEvents();
+        break;
+      case 'levels':
+        loadLevelUps();
+        break;
+      case 'sales':
+        loadSales();
+        break;
+      case 'summons':
+        loadSummons();
+        break;
+      case 'hatches':
+        loadHatches();
+        break;
+      default:
+        console.log('invalid data type');
+    }
+  }
+}
+function loadLevelUps() {
+  var waitElm = document.getElementById('medBusyWait');
+  waitElm.style.display = 'block';
+  // lookup player level up history
+  if (dataLimits['levels'] > -1) {
+    limitOpt = `?limit=${dataLimits['levels']}`;
+  } else {
+    limitOpt = '';
+  }
+  var request = new XMLHttpRequest();
+  request.open('POST', `/player/${playerId}/history/levelup${limitOpt}`, true);
+  request.onload = function() {
+    if (!request.status || (request.status >= 400)) {
+      alert('Failed to load meditations.');
+    } else {
+      var resp = JSON.parse(request.responseText);
+      if ('error' in resp) {
+        document.getElementById('levelsList').innerHTML = resp['error'];
+      } else {
+        dataLoaded['levels'] = resp['results'].length;
+        meditationsTable(resp);
+      }
+    }
+  };
+  request.send();
+}
+function meditationsTable(data) {
+  var listElm = document.getElementById('levelsList').getElementsByTagName('tbody')[0];
+  if (dataLimits['levels'] == -1) {
+    listElm.deleteRow(0);
+    var newRow = listElm.insertRow(listElm.rows.length);
+    newRow.innerHTML = '<th>Enh.</th><th>Hero</th><th>Block Date</th><th>To Level</th><th>Bonus Choices</th><th>Stat Ups</th>';
+  }
+  if (data['results'].length > 0) {
+    data['results'].forEach((med) => {
+      dataLimits['levels'] = med[8]
+      var newRow = listElm.insertRow(listElm.rows.length);
+      var levelHero = med[7];
+      if (med[7] > 2000000000000) {
+        levelHero = 'SD-' + (med[7] - 2000000000000);
+      } else if (med[7] > 1000000000000) {
+        levelHero = 'CV-' + (med[7] - 1000000000000);
+      }
+      var lDate = dateConverter(med[8]);
+      switch (med[0]) {
+          case 'harmony':
+              tokens = HARMONY_TOKENS;
+              break;
+          case 'dfkchain':
+              tokens = DFKCHAIN_TOKENS;
+              break;
+          case 'klaytn':
+              tokens = KLAYTN_TOKENS;
+              break;
+          default:
+              tokens = {}
+      }
+      var statChoices = `<div class='bonusStat'>${MEDITATION_HERO_STATS[med[11]]}</div><span style="font-weight:900;">|</span><div class='blessingStat'>${MEDITATION_HERO_STATS[med[12]]}</div><div class='blessingStat'>${MEDITATION_HERO_STATS[med[13]]}</div>`;
+      var statSummary = '';
+      statData = JSON.parse(med[15]);
+      var totalStatUp = 0;
+      var healthUp = 0;
+      var manaUp = 0;
+      if (statData != null) {
+        statData.forEach((statUp) => {
+            statSummary = `${statSummary}(${MEDITATION_STATUP_TYPES[statUp['updateType']]}): +${statUp['increase']} ${MEDITATION_HERO_STATS[statUp['stat']]}\n`;
+            switch (statUp['updateType']) {
+                case 0:
+                case 1:
+                case 2:
+                case 3:
+                    totalStatUp += statUp['increase'];
+                    break;
+                case 4:
+                    healthUp += statUp['increase'];
+                    break;
+                case 5:
+                    manaUp += statUp['increase'];
+                    break;
+                default:
+                    // ignored
+            }
+        });
+      } else {
+        statSummary = med[15];
+      }
+      newRow.innerHTML = `<td><img title="${tokens[med[14]]}" src="/static/images/items/${tokens[med[14]]}.gif" style="width:24px;height:24px;"/></td><td title="${med[7]}" onclick="copyTitle(event);" style="cursor: pointer;"><a href="/hero/${med[7]}">${levelHero}</a></td><td>${lDate}</td><td>${med[10]}</td><td>${statChoices}</td><td title="${statSummary}" onclick="copyTitle(event);" style="cursor: pointer;">+${healthUp} HP +${manaUp} MP +${totalStatUp} STATS</td>`;
+    });
+  } else {
+    var newRow = document.createElement('tr');
+    newRow.innerHTML = '<td colspan=4>None Found</td>';
+    listElm.appendChild(newRow);
+  }
+  var waitElm = document.getElementById('medBusyWait');
+  waitElm.style.display = 'none';
+}
+
+function loadLifeEvents() {
+  var waitElm = document.getElementById('medBusyWait');
+  waitElm.style.display = 'block';
+  // lookup player life event history
+  if (dataLimits['events'] > -1) {
+    limitOpt = `?limit=${dataLimits['events']}`;
+  } else {
+    limitOpt = '';
+  }
+  var request = new XMLHttpRequest();
+  request.open('POST', `/player/${playerId}/history/life${limitOpt}`, true);
+  request.onload = function() {
+    if (!request.status || (request.status >= 400)) {
+      alert('Failed to load life events.');
+    } else {
+      var resp = JSON.parse(request.responseText);
+      if ('error' in resp) {
+        document.getElementById('eventsList').innerHTML = resp['error'];
+      } else {
+        dataLoaded['events'] = resp['results'].length;
+        lifeEventsTable(resp);
+      }
+    }
+  };
+  request.send();
+}
+function lifeEventsTable(data) {
+  var listElm = document.getElementById('eventsList').getElementsByTagName('tbody')[0];
+  if (dataLimits['events'] == -1) {
+    listElm.deleteRow(0);
+    var newRow = listElm.insertRow(listElm.rows.length);
+    newRow.innerHTML = '<th></th><th>Hero</th><th>Block Date</th><th>Event</th>';
+  }
+  if (data['results'].length > 0) {
+    data['results'].forEach((lev) => {
+      dataLimits['events'] = lev[4]
+      var newRow = listElm.insertRow(listElm.rows.length);
+      var evHero = lev[3];
+      if (lev[3] > 2000000000000) {
+        evHero = 'SD-' + (lev[3] - 2000000000000);
+      } else if (lev[3] > 1000000000000) {
+        evHero = 'CV-' + (lev[3] - 1000000000000);
+      }
+      var lDate = dateConverter(lev[4]);
+      switch (lev[0]) {
+          case 'harmony':
+              tokens = HARMONY_TOKENS;
+              break;
+          case 'dfkchain':
+              tokens = DFKCHAIN_TOKENS;
+              break;
+          case 'klaytn':
+              tokens = KLAYTN_TOKENS;
+              break;
+          default:
+              tokens = {}
+      }
+      var eventImage = '';
+      var eventName = lev[5];
+      var eventDetails = '';
+
+      if (lev[7] != undefined) {
+        var stone = lev[6];
+        if (lev[6] == undefined || lev[6] == '0x9999999999999999999999999999999999999999') {
+          stone = '0x0000000000000000000000000000000000000000';
+        } else if ( lev[6] == 'PJ' ) {
+          stone = ''
+        }
+        eventImage = `<img style="max-width: 24px;" src="/static/images/items/${tokens[stone]}.gif" title="${tokens[stone]}" />`;
+        var summoner = lev[7];
+        if (lev[7] > 2000000000000) {
+          summoner = 'SD-' + (lev[7] - 2000000000000);
+        } else if (lev[7] > 1000000000000) {
+          summoner = 'CV-' + (lev[7] - 1000000000000);
+        }
+        var assistant = lev[8];
+        if (lev[8] > 2000000000000) {
+          assistant = 'SD-' + (lev[8] - 2000000000000);
+        } else if (lev[8] > 1000000000000) {
+          assistant = 'CV-' + (lev[8] - 1000000000000);
+        }
+
+        if ( summoner == 0 || summoner == undefined ) {
+          eventName = `Summoned by ${addr}`;
+        } else {
+          eventName = `Summoned by <a href="/hero/${lev[7]}">${summoner}</a> and <a href="/hero/${lev[8]}">${assistant}</a>`;
+        }
+        eventDetails = lev[3];
+      } else if (lev[5] == 'crystalvaleSurvivedPJ') {
+        eventImage = '<img style="max-width: 24px;" src="/static/images/survivor_badge.png" title="Perilous Journey Survivor" />';
+        eventName = 'Recovered Hero from Perilous Journey';
+        eventData = JSON.parse(lev[6]);
+        eventDetails = `Was level ${eventData['heroLevel']} on journey and earned rewards ${eventData['crystalAmount']/1000000000000000000} crystal and ${eventData['jewelAmount']/1000000000000000000} jewel.`;
+      } else if (lev[5] == 'crystalvalePerishedPJ') {
+        eventImage = '<img style="max-width: 24px;" src="/static/images/rip-badge.png" title="Perished on Perilous Journey to Crystalvale" />';
+        eventName = 'Lost Hero on Perilous Journey';
+        eventData = JSON.parse(lev[6]);
+        eventDetails = `Was level ${eventData['heroLevel']} on journey and earned rewards ${eventData['crystalAmount']/1000000000000000000} crystal and ${eventData['jewelAmount']/1000000000000000000} jewel.`;
+      } else if (lev[5] == 'crystalvaleRewardPJ') {
+        eventImage = '<img style="max-width: 24px;" src="/static/images/crystal.png" title="Perilous Journey Rewards" />';
+        eventName = 'Perilous Journey Death Rewards';
+        eventData = JSON.parse(lev[6]);
+        eventDetails += 'Hero collected';
+        eventData.forEach((rewardItem) => {
+          eventDetails += ` ${rewardItem['itemQuantity']} ${tokens[rewardItem['rewardItem']]}`;
+        });
+      } else if (lev[5] == 'crystalvaleStatUpPJ') {
+        eventImage = '<img style="max-width: 24px;" src="/static/images/arrow_up.png" title="Gained stats from perilous Journey" />';
+        eventName = 'Increased Stat Power from Perilous Journey';
+        eventData = JSON.parse(lev[6]);
+        eventDetails += 'Stats Increased';
+        eventData.forEach((statUp) => {
+          eventDetails += ` +${statUp['increase']} ${MEDITATION_HERO_STATS[statUp['stat']]}`;
+        });
+      } else if (lev[5] == 'gen0rerollReward') {
+        if (lev[0] == 'harmony') {
+          eventImage = '<img style="max-width: 24px;" src="/static/images/crystal.png" title="Crystalvale Launch Gen 0 Reroll Rewards" />';
+        } else {
+          eventImage = '<img style="max-width: 24px;" src="/static/images/jade.png" title="New Serendale Launch Gen 0 Reroll Rewards" />';
+        }
+        eventName = 'Gen0 Reroll Rewards';
+        eventData = JSON.parse(lev[6]);
+        eventDetails += 'Gen0 Rerolled';
+        eventData.forEach((rewardItem) => {
+          eventDetails += ` ${rewardItem['itemQuantity']} ${tokens[rewardItem['rewardItem']]}`;
+        });
+      } else if (lev[5] == 'gen0rerollStatUp') {
+        eventImage = '<img style="max-width: 24px;" src="/static/images/arrow_up.png" title="Gained stats from Gen 0 Reroll" />';
+        eventName = 'Increased Stat Power from Gen 0 Reroll';
+        eventData = JSON.parse(lev[6]);
+        eventDetails += 'SubClass Rerolled';
+        eventData.forEach((statUp) => {
+          eventDetails += ` +${statUp['increase']} ${MEDITATION_HERO_STATS[statUp['stat']]}`;
+        });
+      } else if (lev[5] == 'geneRerollStatUp') {
+        eventImage = '<img style="max-width: 24px;" src="/static/images/arrow_up.png" title="Gained stats from Crafting Gene Reroll" />';
+        eventName = 'Increased Stat Power from Crafting Gene Reroll';
+        eventData = JSON.parse(lev[6]);
+        eventDetails += 'Crafting Genes Rolled';
+        eventData.forEach((statUp) => {
+          eventDetails += ` +${statUp['increase']} ${MEDITATION_HERO_STATS[statUp['stat']]}`;
+        });
+      } else if (lev[5] == 'SummonsReset') {
+        eventImage = '<img style="max-width: 24px;" src="/static/images/refresh.png" title="Summons Reset" />';
+        eventName = 'Gen0 Reroll Summons Reset';
+        eventData = JSON.parse(lev[6]);
+        eventDetails = `Summons Reset from ${eventData['oldSummonCount']} to ${eventData['newSummonCount']}.`;
+      } else if (lev[5] == 'XpUp') {
+        eventImage = '<img style="max-width: 24px;" src="/static/images/arrow_up.png" title="XP Increased" />';
+        eventName = 'Gen0 Reroll XP gain';
+        eventData = JSON.parse(lev[6]);
+        eventDetails = `Gained ${eventData['increase']} XP.`;
+      } else if (lev[5] == 'darkSummonSacrifice') {
+        eventImage = '<img style="max-width: 24px;" src="/static/images/rip-badge.png" title="Perished in Dark Summoning Pit" />';
+        eventName = 'Lost Hero in Dark Summon Pit';
+      }
+      newRow.innerHTML = `<td>${eventImage}</td><td title="${lev[3]}" onclick="copyTitle(event);" style="cursor: pointer;"><a href="/hero/${lev[3]}">${evHero}</a></td><td>${lDate}</td><td title="${eventDetails}" onclick="copyTitle(event);" style="cursor: pointer;">${eventName}</td>`;
+    });
+  } else {
+    var newRow = document.createElement('tr');
+    newRow.innerHTML = '<td colspan=4>None Found</td>';
+    listElm.appendChild(newRow);
+  }
+  var waitElm = document.getElementById('medBusyWait');
+  waitElm.style.display = 'none';
+}
+function loadSales() {
+  var waitElm = document.getElementById('medBusyWait');
+  waitElm.style.display = 'block';
+  // lookup player sales history
+  if (dataLimits['sales'] > -1) {
+    limitOpt = `?limit=${dataLimits['sales']}`;
+  } else {
+    limitOpt = '';
+  }
+  var request = new XMLHttpRequest();
+  request.open('POST', `/player/${playerId}/history/sales${limitOpt}`, true);
+  request.onload = function() {
+    if (!request.status || (request.status >= 400)) {
+      alert('Failed to load sales.');
+    } else {
+      var resp = JSON.parse(request.responseText);
+      if ('error' in resp) {
+        document.getElementById('saleList').innerHTML = resp['error'];
+      } else {
+        dataLoaded['sales'] = resp['results'].length;
+        salesTable(resp);
+      }
+    }
+  };
+  request.send();
+}
+function salesTable(data) {
+  var listElm = document.getElementById('salesList');
+  if (dataLimits['sales'] == -1) {
+    var newRow = document.createElement('tr');
+    listElm.innerHTML = '';
+    newRow.innerHTML = '<th>Type</th><th>ID</th><th>Block Date</th><th>Winner</th><th>Sale Price</th>';
+    listElm.appendChild(newRow);
+  }
+  if (data['results'].length > 0) {
+    data['results'].forEach((sale) => {
+      dataLimits['sales'] = sale[4]
+      var newRow = document.createElement('tr');
+      var saleHero = sale[3];
+      if (sale[3] > 2000000000000) {
+        saleHero = 'SD-' + (sale[3] - 2000000000000);
+      } else if (sale[3] > 1000000000000) {
+        saleHero = 'CV-' + (sale[3] - 1000000000000);
+      }
+      var winner = sale[5].substring(0, 6) + '...' + sale[5].substring(38, 42);
+      var lDate = dateConverter(sale[4]);
+      switch (sale[0]) {
+          case 'harmony':
+              token = 'jewel';
+              break;
+          case 'dfkchain':
+              token = 'crystal';
+              break;
+          case 'klaytn':
+              token = 'jade';
+              break;
+          default:
+              tokens = {}
+      }
+      var salePrice = sale[6];
+      newRow.innerHTML = `<td>${sale[8]}</td><td title="${sale[3]}" onclick="copyTitle(event);" style="cursor: pointer;"><a href="/${sale[8]}/${sale[3]}">${saleHero}</a></td><td>${lDate}</td><td title="${sale[5]}" onclick="copyTitle(event);whoDis('${sale[5]}', event);" style="cursor: pointer;">${winner}</td><td><img style="max-width:16px;" src="/static/images/${token}-perspective.png" />${salePrice.toFixed(1)}</td>`;
+      listElm.appendChild(newRow);
+    });
+  } else {
+    var newRow = document.createElement('tr');
+    newRow.innerHTML = '<td colspan=4>None Found</td>';
+    listElm.appendChild(newRow);
+  }
+  var waitElm = document.getElementById('medBusyWait');
+  waitElm.style.display = 'none';
+}
+function loadSummons() {
+  var waitElm = document.getElementById('medBusyWait');
+  waitElm.style.display = 'block';
+  // lookup player summon history
+  if (dataLimits['summons'] > -1) {
+    limitOpt = `&limit=${dataLimits['summons']}`;
+  } else {
+    limitOpt = '';
+  }
+  var request = new XMLHttpRequest();
+  request.open('POST', `/player/${playerId}/history/summons?order=desc${limitOpt}`, true);
+  request.onload = function() {
+    if (!request.status || (request.status >= 400)) {
+      alert('Failed to load summons.');
+    } else {
+      var resp = JSON.parse(request.responseText);
+      if ('error' in resp) {
+        document.getElementById('summonsList').innerHTML = resp['error'];
+      } else {
+        dataLoaded['summons'] = resp['results'].length;
+        summonsTable(resp);
+      }
+    }
+  };
+  request.send();
+}
+function summonsTable(data) {
+  var listElm = document.getElementById('summonsList');
+  if (dataLimits['summons'] == -1) {
+    var newRow = document.createElement('tr');
+    listElm.innerHTML = '';
+    newRow.innerHTML = '<th>Enh.</th><th>owner</th><th>Block Time</th><th>New Hero</th><th>Summoner</th><th>Assistant</th>';
+    listElm.appendChild(newRow);
+  }
+  if (data['results'].length > 0) {
+    data['results'].forEach((summon) => {
+      dataLimits['summons'] = summon[4]
+      var newRow = document.createElement('tr');
+      var addr = summon[3].substring(0, 6) + '...' + summon[3].substring(38, 42);
+      var lDate = timeConverter(summon[4]);
+      switch (summon[0]) {
+          case 'harmony':
+              tokens = HARMONY_TOKENS;
+              break;
+          case 'dfkchain':
+              tokens = DFKCHAIN_TOKENS;
+              break;
+          case 'klaytn':
+              tokens = KLAYTN_TOKENS;
+              break;
+          default:
+              tokens = {}
+      }
+      var stone = summon[6];
+      if (summon[6] == undefined) {
+        stone = '0x0000000000000000000000000000000000000000';
+      }
+      newHero = summon[5];
+      if (summon[5] > 2000000000000) {
+        newHero = 'SD-' + (summon[5] - 2000000000000);
+      } else if (summon[5] > 1000000000000) {
+        newHero = 'CV-' + (summon[5] - 1000000000000);
+      }
+      summoner = summon[7];
+      if (summon[7] > 2000000000000) {
+        summoner = 'SD-' + (summon[7] - 2000000000000);
+      } else if (summon[7] > 1000000000000) {
+        summoner = 'CV-' + (summon[7] - 1000000000000);
+      }
+      assistant = summon[8];
+      if (summon[8] > 2000000000000) {
+        assistant = 'SD-' + (summon[8] - 2000000000000);
+      } else if (summon[8] > 1000000000000) {
+        assistant = 'CV-' + (summon[8] - 1000000000000);
+      }
+      newRow.innerHTML = `<td><img style="max-width: 16px;" src="/static/images/items/${tokens[stone]}.gif" title="${tokens[stone]}" /></td><td title="${summon[3]}" onclick="copyTitle(event);whoDis('${summon[3]}', event);" style="cursor: pointer;">${addr}</td><td>${lDate}</td><td><a href="/hero/${summon[5]}">${newHero}</a></td><td><a href="/hero/${summon[7]}">${summoner}</a> <img style="max-width:16px;" src="/static/images/items/gaias-tear.png" />${summon[9]}</td><td><a href="/hero/${summon[8]}">${assistant}</a> <img style="max-width:16px;" src="/static/images/items/gaias-tear.png" />${summon[10]}</td>`;
+      listElm.appendChild(newRow);
+    });
+  } else {
+    var newRow = document.createElement('tr');
+    newRow.innerHTML = '<td colspan=4>None Found</td>';
+    listElm.appendChild(newRow);
+  }
+  var waitElm = document.getElementById('medBusyWait');
+  waitElm.style.display = 'none';
+}
+function loadHatches() {
+  var waitElm = document.getElementById('medBusyWait');
+  waitElm.style.display = 'block';
+  // lookup player hatches history
+  if (dataLimits['hatches'] > -1) {
+    limitOpt = `&limit=${dataLimits['hatches']}`;
+  } else {
+    limitOpt = '';
+  }
+  var request = new XMLHttpRequest();
+  request.open('POST', `/player/${playerId}/history/hatches?order=desc${limitOpt}`, true);
+  request.onload = function() {
+    if (!request.status || (request.status >= 400)) {
+      alert('Failed to load hatches.');
+    } else {
+      var resp = JSON.parse(request.responseText);
+      if ('error' in resp) {
+        document.getElementById('hatchesList').innerHTML = resp['error'];
+      } else {
+        dataLoaded['hatches'] = resp['results'].length;
+        hatchesTable(resp);
+      }
+    }
+  };
+  request.send();
+}
+function hatchesTable(data) {
+  var listElm = document.getElementById('hatchesList');
+  if (dataLimits['hatches'] == -1) {
+    var newRow = document.createElement('tr');
+    listElm.innerHTML = '';
+    newRow.innerHTML = '<th>Egg</th><th>owner</th><th>Block Time</th><th>New Pet</th><th>Tier</th>';
+    listElm.appendChild(newRow);
+  }
+  if (data['results'].length > 0) {
+    data['results'].forEach((hatch) => {
+      dataLimits['hatches'] = hatch[4];
+      var newRow = document.createElement('tr');
+      var addr = hatch[3].substring(0, 6) + '...' + hatch[3].substring(38, 42);
+      var lDate = timeConverter(hatch[4]);
+
+      newPet = hatch[5];
+      if (hatch[5] > 2000000000000) {
+        newPet = 'SD-' + (hatch[5] - 2000000000000);
+      } else if (hatch[5] > 1000000000000) {
+        newPet = 'CV-' + (hatch[5] - 1000000000000);
+      }
+
+      newRow.innerHTML = `<td><img style="max-width: 60px;" src="/static/images/items/egg${hatch[6]}.png" title="${EGG_NAMES[hatch[6]]}" /></td><td title="${hatch[3]}" onclick="copyTitle(event);whoDis('${hatch[3]}', event);" style="cursor: pointer;">${addr}</td><td>${lDate}</td><td><a href="/pet/${hatch[5]}">${newPet}</a></td><td><div style="font-weight:bold;">${EGG_TIERS[hatch[7]]}</div></td>`;
+      listElm.appendChild(newRow);
+    });
+  } else {
+    var newRow = document.createElement('tr');
+    newRow.innerHTML = '<td colspan=4>None Found</td>';
+    listElm.appendChild(newRow);
+  }
+  var waitElm = document.getElementById('medBusyWait');
+  waitElm.style.display = 'none';
+}
+function refreshLists() {
+}
+function rrrefreshLists() {
+  dataLoaded = {
+    'events': -1,
+    'levels': -1,
+    'sales': -1,
+    'summons': -1,
+    'hatches': -1
+  };
+  if (isConnected()) {
+    switch (activeData) {
+      case 'events':
+        loadLifeEvents();
+        break;
+      case 'levels':
+        loadLevelUps();
+        break;
+      case 'sales':
+        loadSales();
+        break;
+      case 'summons':
+        loadSummons();
+        break;
+      case 'hatches':
+        loadHatches();
+        break;
+      default:
+        console.log('invalid data type');
+    }
+  }
+}
+</script>
+<a href="/" title="Return to Home"><div id="pageTitle"><div>DFK History</div><img style="position:relative;left:-8px;top:-8px;" src="/static/images/line.png" /></div></a>
+<div style="float:right;" id="loginBlock"><input id="connectWallet" type="button" value="Connect Wallet" onclick="connect();" class="largeButton"><span id="member"></span><input id="loginButton" type="button" value="Login" onclick="login(true);" class="largeButton" style="display:none;"><input id="logoutButton" type="button" value="Logout" onclick="logout();" class="largeButton" style="display:none;"></div>
+<h2 class="contTitle" style="position: absolute;left: 50%;top: 50px;transform: translate(-50%);"><img src="/static/images/gui_title_left.png" /><div id="playerHeader"><span id="playerName" style="font-family:romanantique;"></span></div><img src="/static/images/gui_title_right.png" /></h2>
+<div id="playerListsContainer" class="infoContainer">
+    <div id="heroDataToggle" class="headerToggle">
+        <button id="eventsHeader" class="toggleButton" style="width: calc(20% - 4px);" title="View Life Events">Events</button>
+        <button id="levelsHeader" class="toggleButton" style="width: calc(20% - 4px);" title="View Level Ups">Levels</button>
+        <button id="salesHeader" class="toggleButton" style="width: calc(20% - 4px);" title="View Sales">Sales</button>
+        <button id="summonsHeader" class="toggleButton" style="width: calc(20% - 4px);" title="View Summons">Summons</button>
+        <button id="hatchesHeader" class="toggleButton" style="width: calc(20% - 4px);" title="View Hatches">Hatches</button>
+    </div>
+    <div id="heroData" style="margin: 12px;">
+        <img style="width: 100%" src="/static/images/parchment-top.png" />
+        <div id="heroLists" class="scrollBack">
+        <table id="eventsList" class="heroTable"><tr><th></th><th>owner</th><th>Block Date</th><th>Event</th></tr></table>
+        <table id="levelsList" class="heroTable"><tr><th>Enh.</th><th>owner</th><th>Block Date</th><th>To Level</th><th>Bonus Choices</th><th>Stat Ups</th></tr></table>
+        <table id="salesList" class="heroTable"><tr><th>Type</th><th>ID</th><th>Block Date</th><th>Winner</th><th>Sale Price</th></tr></table>
+        <table id="summonsList" class="heroTable"><tr><th>Enh.</th><th>owner</th><th>Block Time</th><th>New Hero</th><th>Summoner</th><th>Assistant</th></tr></table>
+        <table id="hatchesList" class="heroTable"><tr><th>Egg</th><th>owner</th><th>Block Time</th><th>New Pet</th><th>Tier</th></tr></table>
+        <div id="medBusyWait"><div id="animate1"><div id="animate1Img"><img src="/static/images/swamp-front.gif" /></div></div></div>
+        <input id="loadMore" type="button" value="Load More" onclick="loadMore();" class="largeButton">
+        </div>
+        <img style="width: 100%" src="/static/images/parchment-bottom.png" />
+    </div>
+</div>
+<div style="position:fixed;left:0;bottom:160px;margin:16px;"><a href="/player" title="Player History"><img style="width: 64px;" src="/static/images/player.png" /></a></div>
+<div style="position:fixed;left:0;bottom:80px;margin:16px;"><a href="/pets" title="Return to Pet Selection"><img style="width: 64px;" src="/static/images/pets-icon.png" /></a></div>
+<div style="position:fixed;left:0;bottom:0px;margin:16px;"><a href="/heroes" title="Return to Hero Selection"><img style="width: 64px;" src="/static/images/oldportal.png" /></a></div>
+<div style="position:fixed;right:0;bottom:0px;margin:8px;"><a href="/about" title="FAQ"><img style="width: 64px;opacity: 65%;" src="/static/images/help.png" /></a></div>
+</body>
+</html>
