@@ -30,7 +30,7 @@ TOKEN_SUB_VALUES = {
 
 def extractTokenResults(w3, account, receipt, network):
     contract = w3.eth.contract(address='0x72Cb10C6bfA5624dD07Ef608027E366bd690048F', abi=settings.ERC20_ABI)
-    decoded_logs = contract.events.Transfer().processReceipt(receipt, errors=DISCARD)
+    decoded_logs = contract.events.Transfer().process_receipt(receipt, errors=DISCARD)
     transfers = []
     for log in decoded_logs:
         if log['args']['from'] == account:
@@ -169,7 +169,6 @@ def validatePayment(network, account, txHash):
             response = ''.join(('{ "error" : "Error: No valid token transfers were found in that transaction." }'))
             failure = True
 
-    print('Content-type: text/json\n')
     if failure == False:
         purchaseTime = getSubscriptionTime(txToken, tokenAmount)
         if purchaseTime > 0:
@@ -187,7 +186,8 @@ def validatePayment(network, account, txHash):
 
 def main():
     # Initialize database
-    validatePayment()
+    result = validatePayment('dfkchain', '0x9D4D95FbE9Fb951D8Ef9A1d8dF70105da7F156F2', '0x7b6a17ccf195855849d1d5c66312c73a43531ac51ae6d3fc00ecc922a37d9a87')
+    print(result)
 
 
 if __name__ == "__main__":
