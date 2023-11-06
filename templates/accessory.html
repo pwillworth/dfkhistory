@@ -226,7 +226,7 @@ function lifeEventsTable(data) {
       }
       eventImage = '<img style="max-width: 24px;" src="/static/images/airdrop.png" title="Event Creation" />';
 
-      newRow.innerHTML = `<td>${eventImage}</td><td title="${lev[3]}" onclick="copyTitle(event);whoDis('${lev[3]}', event);" style="cursor: pointer;">${addr}</td><td>${lDate}</td><td title="${eventName}" onclick="copyTitle(event);" style="cursor: pointer;">${eventDetails}</td>`;
+      newRow.innerHTML = `<td>${eventImage}</td><td title="${lev[3]}" onclick="copyTitle(event);whoDis('${lev[3]}', event);" style="cursor: pointer;">${addr}</td><td>${lDate}</td><td title="${eventName}">${eventDetails}</td>`;
     });
   } else {
     var newRow = document.createElement('tr');

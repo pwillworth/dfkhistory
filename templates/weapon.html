@@ -240,11 +240,18 @@ function lifeEventsTable(data) {
       var eventName = lev[5];
       var eventDetails = '';
 
-      eventDetails = lev[3];
-      eventImage = '<img style="max-width: 24px;" src="/static/images/rip-badge.png" title="tbd" />';
-      eventName = 'TBD';
+      eventDetails = lev[6];
+      if (eventDetails in EQUIPMENT_SOURCE) {
+        eventDetails = EQUIPMENT_SOURCE[eventDetails]
+      } else {
+        if ( lev[6] != undefined && lev[6].length > 40 ) {
+          crafterShort = lev[6].substring(0, 6) + '...' + lev[6].substring(38, 42);
+          eventDetails = `Crafted By: <span title="${lev[6]}" onclick="copyTitle(event);whoDis('${lev[6]}', event);" style="cursor: pointer;">${crafterShort}</span>`;
+        }
+      }
+      eventImage = '<img style="max-width: 24px;" src="/static/images/airdrop.png" title="Event Creation" />';
 
-      newRow.innerHTML = `<td>${eventImage}</td><td title="${lev[3]}" onclick="copyTitle(event);whoDis('${lev[3]}', event);" style="cursor: pointer;">${addr}</td><td>${lDate}</td><td title="${eventDetails}" onclick="copyTitle(event);" style="cursor: pointer;">${eventName}</td>`;
+      newRow.innerHTML = `<td>${eventImage}</td><td title="${lev[3]}" onclick="copyTitle(event);whoDis('${lev[3]}', event);" style="cursor: pointer;">${addr}</td><td>${lDate}</td><td title="${eventName}">${eventDetails}</td>`;
     });
   } else {
     var newRow = document.createElement('tr');
