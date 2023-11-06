@@ -1,0 +1,364 @@
+<html lang="en">
+<head>
+  <title>Equipment History</title>
+  <meta property="og:title" content="Equipment History">
+  <meta property="og:description" content="Event history and details for item {{ equipmentIdShort }}.">
+  <link rel="shortcut icon" href="/static/images/favicon.png" />
+  <link rel="stylesheet" type="text/css" href="/static/herohistory.css" media="screen" />
+  <script src="/static/herohistory.js" type="text/javascript"></script>
+  <script src="/static/equipmentData.js" type="text/javascript"></script>
+</head>
+<body>
+<script>
+var activeData = '{{ activeTab }}';
+var dataLoaded = {
+  'events': -1,
+  'sales': -1
+};
+const equipmentIdLong = '{{ equipmentIdLong }}';
+const equipmentIdShort = '{{ equipmentIdShort }}';
+window.onload = (event) => {
+  var dh = document.getElementById('equipmentDataToggle');
+  dh.addEventListener("click", function(event) {
+    var elmId = event.target.id;
+    if (event.target.classList.contains('toggleButton')) {
+      var title = event.target.getAttribute("title");
+      switch (title) {
+        case "View Events":
+          switchView('events');
+          break;
+        case "View Sales":
+          switchView('sales');
+          break;
+        default:
+          //nada
+      }
+    }
+  });
+  loadEquipment();
+  switchView(activeData);
+};
+
+function switchView(dataList) {
+  [].forEach.call(document.querySelectorAll('.heroTable'), function (el) {
+    el.style.display = 'none';
+  });
+  [].forEach.call(document.querySelectorAll('.toggleButton'), function (el) {
+    el.classList.remove('toggleButtonActive')
+  });
+  var headElm = document.getElementById(`${dataList}Header`);
+  headElm.classList.add('toggleButtonActive');
+  var showElm = document.getElementById(`${dataList}List`);
+  showElm.style.display = 'table';
+  if (dataLoaded[dataList] < 0) {
+    switch (dataList) {
+      case 'events':
+        loadLifeEvents();
+        break;
+      case 'sales':
+        loadSales();
+        break;
+      default:
+        console.log('invalid data type');
+    }
+  }
+  activeData = dataList;
+}
+function loadEquipment() {
+  // look for DFK profile name of address
+  query = `query {
+    accessories(
+        where: { id: "${equipmentIdLong}" } 
+    ) 
+    {
+        owner { id }
+        createdAt
+        craftedBy
+        displayId
+        rarity
+        dye1
+        dye2
+        equipmentType
+        maxDurability
+        durability
+        maxRepairs
+        remainingRepairs
+        bonus1
+        bonus2
+        bonus3
+        bonus4
+        bonus5
+        bonusScalar1
+        bonusScalar2
+        bonusScalar3
+        bonusScalar4
+        bonusScalar5
+        enchantmentType1
+        enchantmentType2
+        enchantmentType3
+        enchantmentScalar1
+        enchantmentScalar2
+        enchantmentScalar3
+        equipRequirement
+        restorationCount
+    }
+  }`
+  graph_uri = "https://api.defikingdoms.com/graphql"
+  var request = new XMLHttpRequest();
+  request.open('POST', graph_uri, true);
+  request.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+  request.onload = function() {
+    if (!request.status || (request.status >= 400)) {
+      alert('Failed to load equipment details.');
+    } else {
+      var resp = JSON.parse(request.responseText);
+      if ('error' in resp) {
+        alert(resp['error']);
+      } else {
+        if (resp['data']['accessories'][0] != undefined) {
+          displayEquipment(resp['data']['accessories'][0]);
+        } else {
+          alert(`Equipment not found: ${equipmentIdLong}`);
+        }
+      }
+    }
+  };
+  request.send(JSON.stringify({ 'query': query }));
+}
+function displayEquipment(data) {
+  equipmentType = data['equipmentType'];
+  displayId = data['displayId'];
+  pn = document.getElementById('equipmentImage');
+  pn.setAttribute('src', `https://defi-kingdoms.b-cdn.net/art-assets/equipment/accessory/${equipmentType}-${displayId}.png`);
+  pb = document.getElementById('equipmentBorder');
+  if (data['rarity'] > 2) {
+    rarityBorder = '/static/images/mythic-basic.png';
+  } else {
+    rarityBorder = '/static/images/rare-basic.png';
+  }
+  pb.setAttribute('src', rarityBorder);
+
+  var nameElm = document.getElementById('equipmentName');
+  nameElm.innerHTML = ACCESSORY_TEXT[data['equipmentType']][data['displayId']][data['rarity']]['name'];
+  var typeElm = document.getElementById('accessoryType');
+  typeElm.innerHTML = `Type: ${ACCESSORY_TYPES[data['equipmentType']]}`;
+  var originElm = document.getElementById('equipmentOrigin');
+  originElm.innerHTML = EQUIPMENT_SOURCE[data['craftedBy']];
+  var durabilityElm = document.getElementById('durability');
+  durabilityElm.innerHTML = `durability: ${data['durability']}/${data['maxDurability']}`;
+  var repairsElm = document.getElementById('repairs');
+  repairsElm.innerHTML = `repairs: ${data['remainingRepairs']}/${data['maxRepairs']}`;
+  var requirementElm = document.getElementById('requirement');
+  requirementElm.innerHTML = `Requires Level ${data['equipRequirement']}`;
+
+  for (let i=1; i<6; i++) {
+    if (data[`bonus${i}`] > 0) {
+      var bonusesElm = document.getElementById(`scalarBonusContainer${i}`);
+      bonusesElm.innerHTML = ACCESSORY_BONUS_DESCRIPTIONS[data[`bonus${i}`]].replace('{0}', data[`bonusScalar${i}`]/10);
+    }
+  }
+  for (let y=1; y<4; y++) {
+    if (data[`enchantmentType${y}`] > 0) {
+      var enchantmentsElm = document.getElementById(`scalarEnchantmentContainer${y}`);
+      enchantmentsElm.innerHTML = 'Empty Enchantment Slot';
+    }
+  }
+  var descElm = document.getElementById('equipmentDescription');
+  descElm.innerHTML = ACCESSORY_TEXT[data['equipmentType']][data['displayId']][data['rarity']]['description'];
+  colorsElm = document.getElementById('equipmentColors');
+  colorContent = '';
+  if (data['dye1'] > 0) {
+    colorContent = `<div class="ib" style="width:32px;height:32px;border: 1px solid black;background-color: ${EQUIPMENT_DYE1_COLORS[data['dye1']]};">D1</div>`;
+  }
+  if (data['dye2'] > 0) {
+    colorContent += `<div class="ib" style="width:32px;height:32px;border: 1px solid black;background-color: ${EQUIPMENT_DYE2_COLORS[data['dye2']]};">D2</div>`;
+  }
+  colorsElm.innerHTML = colorContent;
+}
+
+function loadLifeEvents() {
+  var waitElm = document.getElementById('medBusyWait');
+  waitElm.style.display = 'block';
+  // lookup equipment event history
+  var request = new XMLHttpRequest();
+  request.open('POST', `/accessory/${equipmentIdLong}/history/life`, true);
+  request.onload = function() {
+    if (!request.status || (request.status >= 400)) {
+      alert('Failed to load life events.');
+    } else {
+      var resp = JSON.parse(request.responseText);
+      if ('error' in resp) {
+        document.getElementById('lifeEventList').innerHTML = resp['error'];
+      } else {
+        dataLoaded['events'] = resp['results'].length;
+        lifeEventsTable(resp);
+      }
+    }
+  };
+  request.send();
+}
+function lifeEventsTable(data) {
+  var listElm = document.getElementById('eventsList').getElementsByTagName('tbody')[0];
+  listElm.deleteRow(0);
+  var newRow = listElm.insertRow(listElm.rows.length);
+  newRow.innerHTML = '<th></th><th>owner</th><th>Block Date</th><th>Event</th>';
+  var level = 1;
+  if (data['results'].length > 0) {
+    data['results'].forEach((lev) => {
+      var newRow = listElm.insertRow(listElm.rows.length);
+      var addr = lev[3];
+      if ( lev[3] != undefined && lev[3].length > 40 ) {
+        addr = lev[3].substring(0, 6) + '...' + lev[3].substring(38, 42);
+      }
+      var lDate = dateConverter(lev[4]);
+      var eventImage = '';
+      var eventName = lev[5];
+      var eventDetails = '';
+
+      eventDetails = lev[6];
+      if (eventDetails in EQUIPMENT_SOURCE) {
+        eventDetails = EQUIPMENT_SOURCE[eventDetails]
+      } else {
+        if ( lev[6] != undefined && lev[6].length > 40 ) {
+          crafterShort = lev[6].substring(0, 6) + '...' + lev[6].substring(38, 42);
+          eventDetails = `Crafted By: <span title="${lev[6]}" onclick="copyTitle(event);whoDis('${lev[6]}', event);" style="cursor: pointer;">${crafterShort}</span>`;
+        }
+      }
+      eventImage = '<img style="max-width: 24px;" src="/static/images/airdrop.png" title="Event Creation" />';
+
+      newRow.innerHTML = `<td>${eventImage}</td><td title="${lev[3]}" onclick="copyTitle(event);whoDis('${lev[3]}', event);" style="cursor: pointer;">${addr}</td><td>${lDate}</td><td title="${eventName}" onclick="copyTitle(event);" style="cursor: pointer;">${eventDetails}</td>`;
+    });
+  } else {
+    var newRow = document.createElement('tr');
+    newRow.innerHTML = '<td colspan=4>None Found</td>';
+    listElm.appendChild(newRow);
+  }
+  var waitElm = document.getElementById('medBusyWait');
+  waitElm.style.display = 'none';
+}
+function loadSales() {
+  var waitElm = document.getElementById('medBusyWait');
+  waitElm.style.display = 'block';
+  // lookup sales history
+  var request = new XMLHttpRequest();
+  request.open('POST', `/accessory/${equipmentIdLong}/history/sales`, true);
+  request.onload = function() {
+    if (!request.status || (request.status >= 400)) {
+      alert('Failed to load sales.');
+    } else {
+      var resp = JSON.parse(request.responseText);
+      if ('error' in resp) {
+        document.getElementById('saleList').innerHTML = resp['error'];
+      } else {
+        dataLoaded['sales'] = resp['results'].length;
+        salesTable(resp);
+      }
+    }
+  };
+  request.send();
+}
+function salesTable(data) {
+  var listElm = document.getElementById('salesList');
+  var newRow = document.createElement('tr');
+  listElm.innerHTML = '';
+  newRow.innerHTML = '<th>Seller</th><th>Block Date</th><th>Winner</th><th>Sale Price</th>';
+  listElm.appendChild(newRow);
+  if (data['results'].length > 0) {
+    data['results'].forEach((sale) => {
+      var newRow = document.createElement('tr');
+      var addr = sale[3].substring(0, 6) + '...' + sale[3].substring(38, 42);
+      var winner = sale[5].substring(0, 6) + '...' + sale[5].substring(38, 42);
+      var lDate = dateConverter(sale[4]);
+      switch (sale[0]) {
+          case 'harmony':
+              token = 'jewel';
+              break;
+          case 'dfkchain':
+              token = 'crystal';
+              break;
+          case 'klaytn':
+              token = 'jade';
+              break;
+          default:
+              tokens = {}
+      }
+      var salePrice = sale[6];
+      newRow.innerHTML = `<td title="${sale[3]}" onclick="copyTitle(event);whoDis('${sale[3]}', event);" style="cursor: pointer;">${addr}</td><td>${lDate}</td><td title="${sale[5]}" onclick="copyTitle(event);whoDis('${sale[5]}', event);" style="cursor: pointer;">${winner}</td><td><img style="max-width:16px;" src="/static/images/${token}-perspective.png" />${salePrice.toFixed(1)}</td>`;
+      listElm.appendChild(newRow);
+    });
+  } else {
+    var newRow = document.createElement('tr');
+    newRow.innerHTML = '<td colspan=4>None Found</td>';
+    listElm.appendChild(newRow);
+  }
+  var waitElm = document.getElementById('medBusyWait');
+  waitElm.style.display = 'none';
+}
+
+</script>
+<a href="/" title="Return to Home"><div id="pageTitle"><div>DFK History</div><img style="position:relative;left:-8px;top:-8px;" src="/static/images/line.png" /></div></a>
+<div id="equipmentGraphic" style="background-image: url(/static/images/wood_bg_tile.png)">
+  <div style="background-image: url(/static/images/board_frame_left.png);position: absolute;top:48;left:0;width:12px;height:530px;background-repeat: repeat;"></div>
+  <img src="/static/images/board_frame_top_left.png" style="position: absolute;top:0;left:0;" />
+  <div style="background-image: url(/static/images/board_frame_top.png);position: absolute;top:0;left:48;width:816px;height:12px;background-repeat: repeat;"></div>
+  <img src="/static/images/board_frame_top_right.png" style="position: absolute;top:0;left:864;" />
+  <div id="equipmentTitle"><span id="equipmentName" class="contTitle" style="margin-top:-4px;"></span></div>
+  <div id="equipmentBlock" style="position:relative;top:0px;left:48px;height:168px;width:168px;">
+    <div id="equipmentBack" style="position:absolute;top:16;left:16;width:136px;height:136px;background-image: linear-gradient(rgb(92, 91, 91),black);"></div>
+    <img id="equipmentImage" style="width:154px;position:absolute;top:8;left:8;image-rendering: pixelated;"/>
+    <img id="equipmentBorder" style="position:absolute;top:0;left:0;width:168px;image-rendering: pixelated;"/>
+  </div>
+  <div id="equipmentDetails" class="tshadow" style="font-size:12px;font-weight:bold;position: absolute;top:240;left:64;">
+    <div id="accessoryType"></div>
+    <div id="requirement"></div>
+    <div id="durability"></div>
+    <div id="repairs"></div>
+    <div style="margin-top:16px;font-size:14px;">Creator:</div>
+    <div id="equipmentOrigin"></div>
+  </div>
+  <div id="equipmentContainer" class="tshadow" style="position:absolute;top:80;left:280;width:560px;font-size:14px;font-weight: bold;">
+    <div id="equipmentBonuses" style="padding-bottom: 12px;margin-bottom: 12px;border-bottom: 1px solid tan;">
+        <div id="scalarBonusContainer1"></div>
+        <div id="scalarBonusContainer2"></div>
+        <div id="scalarBonusContainer3"></div>
+        <div id="scalarBonusContainer4"></div>
+        <div id="scalarBonusContainer4"></div>
+    </div>
+    <div id="equipmentEnchantments" style="padding-bottom: 12px;margin-bottom: 12px;border-bottom: 1px solid tan;">
+        <div id="scalarEnchantmentContainer1"></div>
+        <div id="scalarEnchantmentContainer2"></div>
+        <div id="scalarEnchantmentContainer3"></div>
+    </div>
+  </div>
+  <div id="equipmentColors" style="position:absolute;top:475px;left: 66px;width: 128px;height: 64px;"></div>
+  <div id="equipmentDescription" style="position:absolute;top:525px;left: 36px;width:800px;margin:24px;border-top: 1px solid tan;font-style: italic;color:aliceblue;"></div>
+
+  <img src="/static/images/board_frame_bottom_left.png" style="position: absolute;top:564;left:0;" />
+  <div style="background-image: url(/static/images/board_frame_right.png);position: absolute;top:48;left:900;width:12px;height:518px;background-repeat: repeat;"></div>
+  <img src="/static/images/board_frame_bottom_right.png" style="position: absolute;top:564;left:864;" />
+  <div style="background-image: url(/static/images/board_frame_bottom.png);position: absolute;top:600;left:48;width:816px;height:12px;background-repeat: repeat;"></div>
+</div>
+
+<div id="dataContainer" class="infoContainer">
+  <div id="equipmentDataToggle" class="headerToggle">
+    <button id="eventsHeader" class="toggleButton" style="width: calc(50% - 4px);" title="View Events">Events</button>
+    <button id="salesHeader" class="toggleButton" style="width: calc(50% - 4px);" title="View Sales">Sales</button>
+  </div>
+  <div id="equipmentData" style="margin: 12px;">
+    <img style="width: 100%" src="/static/images/parchment-top.png" />
+    <div class="scrollBack">
+      <table id="eventsList" class="heroTable"><tr><th></th><th>player</th><th>Block Date</th><th>Event</th></tr></table>
+      <table id="salesList" class="heroTable"><tr><th>Seller</th><th>Block Date</th><th>Winner</th><th>Sale Price</th></tr></table>
+      <div id="medBusyWait"><div id="animate1"><div id="animate1Img"><img src="/static/images/swamp-front.gif" /></div></div></div>
+    </div>
+    <img style="width: 100%" src="/static/images/parchment-bottom.png" />
+  </div>
+</div>
+<div style="position:fixed;left:0;bottom:240px;margin:16px;"><a href="/player" title="Member Page"><img style="width: 64px;" src="/static/images/player.png" /></a></div>
+<div style="position:fixed;left:0;bottom:160px;margin:16px;"><a href="/equipment" title="Equipment Selection"><img style="width: 64px;" src="/static/images/equipment-icon.png" /></a></div>
+<div style="position:fixed;left:0;bottom:80px;margin:16px;"><a href="/pets" title="Return to Pet Selection"><img style="width: 64px;" src="/static/images/pets-icon.png" /></a></div>
+<div style="position:fixed;left:0;bottom:0px;margin:16px;"><a href="/heroes" title="Return to Hero Selection"><img style="width: 64px;" src="/static/images/oldportal.png" /></a></div>
+<div style="position:fixed;right:0;bottom:0px;margin:8px;"><a href="/about" title="FAQ"><img style="width: 64px;opacity: 65%;" src="/static/images/help.png" /></a></div>
+<h2 class="contTitle" style="display:none;"><img src="/static/images/gui_title_left.png" /><div id="eventsHeader" class="dataHeader" title="View Life Events"><span class="dataHeader" title="View Life Events">Events</span></div><img src="/static/images/gui_title_right.png" /></h2>
+</body>
+</html>

@@ -1,0 +1,92 @@
+<html lang="en">
+<head>
+  <title>DFK Equipment History</title>
+  <meta property="og:title" content="DFK Equipment History">
+  <meta property="og:description" content="DFK Kingdoms game event history equipment page.">
+  <link rel="shortcut icon" href="/static/images/favicon.png" />
+  <meta property="og:image" content="/static/images/favicon.png">
+  <link rel="stylesheet" type="text/css" href="/static/herohistory.css" media="screen" />
+  <script src="/static/herohistory.js" type="text/javascript"></script>
+</head>
+<body>
+<script>
+window.onload = (event) => {
+    const node = document.getElementById("equipmentId");
+    node.addEventListener("keyup", function(event) {
+        if (event.key === "Enter") {
+            goPet();
+        }
+        checkId(event);
+    });
+};
+function checkId(event) {
+  var petId = event.target.value;
+  if ( petId > 2000000000000) {
+    var hForm = document.forms['equipmentForm'];
+    var optElm = hForm.elements['realmOption'];
+    optElm.value = 'SER2';
+    return;
+  }
+  if ( petId > 1000000000000) {
+    var hForm = document.forms['equipmentForm'];
+    var optElm = hForm.elements['realmOption'];
+    optElm.value = 'CRY';
+    return;
+  }
+}
+function goEquipment() {
+  var realm = document.querySelector('input[name="realmOption"]:checked').value;
+  var eType = document.querySelector('input[name="equipmentOption"]:checked').value;
+  var equipmentId = document.getElementById('equipmentId').value;
+  var realmPrefix = "";
+  switch ( realm ) {
+    case "SER2":
+        realmPrefix = "SD-";
+        break;
+    case "CRY":
+        realmPrefix = "CV-";
+        break;
+    default:
+        realmPrefix = "";
+  }
+  if ( Number.isInteger(equipmentId) ) {
+    return 1;
+  }
+  if ( equipmentId > 1000000000000 ) {
+    document.location = `/${eType}/${equipmentId}`;
+  } else {
+    document.location = `/${eType}/${realmPrefix}${equipmentId}`;
+  }
+}
+</script>
+<a href="/" title="Return to Home"><div id="pageTitle"><div>DFK History</div><img style="position:relative;left:-8px;top:-8px;" src="/static/images/line.png" /></div></a>
+<div id="launchContainer">
+    <img src="/static/images/paladin.gif" style="width:140px;image-rendering: pixelated;"/>
+    <h2 id="selectTitleEquipment"><div>Enter an Equipment # and type to view its history.</div></h2>
+    <form id="equipmentForm">
+    <fieldset class="multiToggle">
+    <input type="radio" name="realmOption" id="CRY" value="CRY" checked="checked">
+    <label for="CRY"><img src="/static/images/crystal-card-icon.png" style="width: 32px;" title="Crystalvale Equipment" /></label>
+    <input type="radio" name="realmOption" id="SER2" value="SER2">
+    <label for="SER2"><img src="/static/images/jade-card-icon.png" style="width: 32px;" title="Serendale Equipment" /></label>
+    </fieldset>
+    <input type="text" id="equipmentId" name="equipmentId" size="10" placeholder="#" />
+    <fieldset class="multiToggle tshadow" style="margin-top: 16px;">
+      <input type="radio" name="equipmentOption" id="accessory" value="accessory" checked="checked">
+      <label for="accessory">Accessory</label>
+      <input type="radio" name="equipmentOption" id="armor" value="armor">
+      <label for="armor">Armor</label>
+      <input type="radio" name="equipmentOption" id="weapon" value="weapon">
+      <label for="weapon">Weapon</label>
+    </fieldset>
+    <div style="text-align:center;margin-top:12px;">
+    <input type="button" value="View" class="largeButton" onclick="goEquipment();"/>
+    </div>
+    </form>
+</div>
+<div style="position:fixed;left:0;bottom:160px;margin:16px;"><a href="/player" title="Player History"><img style="width: 64px;" src="/static/images/player.png" /></a></div>
+<div style="position:fixed;left:0;bottom:80px;margin:16px;"><a href="/pets" title="Return to Pet Selection"><img style="width: 64px;" src="/static/images/pets-icon.png" /></a></div>
+<div style="position:fixed;left:0;bottom:0px;margin:16px;"><a href="/heroes" title="Return to Hero Selection"><img style="width: 64px;" src="/static/images/oldportal.png" /></a></div>
+<div style="position:fixed;right:0;bottom:0px;margin:8px;"><a href="/about" title="FAQ"><img style="width: 64px;opacity: 65%;" src="/static/images/help.png" /></a></div>
+</body>
+</html>

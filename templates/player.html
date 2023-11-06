@@ -252,7 +252,7 @@ function lifeEventsTable(data) {
   if (dataLimits['events'] == -1) {
     listElm.deleteRow(0);
     var newRow = listElm.insertRow(listElm.rows.length);
-    newRow.innerHTML = '<th></th><th>Hero</th><th>Block Date</th><th>Event</th>';
+    newRow.innerHTML = '<th></th><th>Item ID</th><th>Block Date</th><th>Event</th>';
   }
   if (data['results'].length > 0) {
     data['results'].forEach((lev) => {
@@ -281,6 +281,7 @@ function lifeEventsTable(data) {
       var eventImage = '';
       var eventName = lev[5];
       var eventDetails = '';
+      var itemType = 'hero';
 
       if (lev[7] != undefined) {
         var stone = lev[6];
@@ -376,8 +377,16 @@ function lifeEventsTable(data) {
       } else if (lev[5] == 'darkSummonSacrifice') {
         eventImage = '<img style="max-width: 24px;" src="/static/images/rip-badge.png" title="Perished in Dark Summoning Pit" />';
         eventName = 'Lost Hero in Dark Summon Pit';
+      } else if (lev[5] == 'CompletedPetExchange') {
+        itemType = 'pet';
+      } else if (lev[5] == 'WeaponCreated') {
+        itemType = 'weapon';
+      } else if (lev[5] == 'ArmorCreated') {
+        itemType = 'armor';
+      } else if (lev[5] == 'AccessoryCreated') {
+        itemType = 'accessory';
       }
-      newRow.innerHTML = `<td>${eventImage}</td><td title="${lev[3]}" onclick="copyTitle(event);" style="cursor: pointer;"><a href="/hero/${lev[3]}">${evHero}</a></td><td>${lDate}</td><td title="${eventDetails}" onclick="copyTitle(event);" style="cursor: pointer;">${eventName}</td>`;
+      newRow.innerHTML = `<td>${eventImage}</td><td title="${lev[3]}" onclick="copyTitle(event);" style="cursor: pointer;"><a href="/${itemType}/${lev[3]}">${evHero}</a></td><td>${lDate}</td><td title="${eventDetails}" onclick="copyTitle(event);" style="cursor: pointer;">${eventName}</td>`;
     });
   } else {
     var newRow = document.createElement('tr');
@@ -661,7 +670,8 @@ function rrrefreshLists() {
         <img style="width: 100%" src="/static/images/parchment-bottom.png" />
     </div>
 </div>
-<div style="position:fixed;left:0;bottom:160px;margin:16px;"><a href="/player" title="Player History"><img style="width: 64px;" src="/static/images/player.png" /></a></div>
+<div style="position:fixed;left:0;bottom:240px;margin:16px;"><a href="/player" title="Player History"><img style="width: 64px;" src="/static/images/player.png" /></a></div>
+<div style="position:fixed;left:0;bottom:160px;margin:16px;"><a href="/equipment" title="Equipment Selection"><img style="width: 64px;" src="/static/images/equipment-icon.png" /></a></div>
 <div style="position:fixed;left:0;bottom:80px;margin:16px;"><a href="/pets" title="Return to Pet Selection"><img style="width: 64px;" src="/static/images/pets-icon.png" /></a></div>
 <div style="position:fixed;left:0;bottom:0px;margin:16px;"><a href="/heroes" title="Return to Hero Selection"><img style="width: 64px;" src="/static/images/oldportal.png" /></a></div>
 <div style="position:fixed;right:0;bottom:0px;margin:8px;"><a href="/about" title="FAQ"><img style="width: 64px;opacity: 65%;" src="/static/images/help.png" /></a></div>

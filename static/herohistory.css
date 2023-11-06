@@ -65,7 +65,7 @@ body {
     left: 50%;
     transform: translate(-50%);
 }
-#petGraphic {
+#petGraphic, #equipmentGraphic {
     margin: 12px;
     width: 900px;
     height: 600px;
@@ -95,7 +95,7 @@ h3 {
     background-repeat: no-repeat;
     font-family: romanantique;
 }
-#selectTitlePets {
+#selectTitlePets, #selectTitleEquipment {
     font-family: romanantique;
 }
 #connectContainer {
@@ -442,7 +442,6 @@ h3 {
 .multiToggle label {
     padding: 20px 15px;
     font-size: 16px;
-	color:rgb(24, 23, 23);
     border: 2px solid rgb(24, 23, 23);
     border-radius: 4px;
 }
@@ -454,7 +453,7 @@ h3 {
 .multiToggle input[type="radio"]:hover + label {
     border-color: #4c4;
 }
-#heroId, #petId {
+#heroId, #petId, #equipmentId {
 	font-size: 32px;
     font-weight: bold;
 	border-style: inset;

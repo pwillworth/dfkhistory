@@ -13,6 +13,16 @@ const MEDITATION_HERO_STATS = {
   9: "MP",
   10: "STAM"
 }
+const EQUIPMENT_HERO_STATS = {
+  1: 'STR',
+  2: 'DEX',
+  3: 'AGI',
+  4: 'VIT',
+  5: 'END',
+  6: 'INT',
+  7: 'WIS',
+  8: 'LCK'
+}
 const MEDITATION_STATUP_TYPES = {
   0: 'primary',
   1: 'secondary',
@@ -328,6 +338,93 @@ const PROF_BONUS_DESCRIPTIONS = {
     'Innate Greenskeeper': 'Gain the Gardening profession bonus'
   }
 }
+const EQUIPMENT_RARITY = {
+  0: "Common",
+  2: "Rare",
+  4: "Mythic"
+}
+const WEAPON_TYPES = {
+  0: 'None',
+  1: 'One-Handed Axe',
+  2: 'Two-Handed Axe',
+  3: 'Bow',
+  4: 'Dagger',
+  5: 'Gloves',
+  6: 'One-Handed Mace',
+  7: 'Two-Handed Mace',
+  8: 'One-Handed Spear',
+  9: 'Two-Handed Spear',
+  10: 'Staff',
+  11: 'One-Handed Sword',
+  12: 'Two-Handed Sword',
+  13: 'Wand'
+}
+const WEAPON_BONUS_DESCRIPTIONS = {
+  1: "Gain {0}% chance to inflict Banish on hit",
+  2: "Gain {0}% chance to inflict Bleed on hit",
+  3: "Gain {0}% chance to inflict Blind on hit",
+  4: "Gain {0}% chance to inflict Burn on hit",
+  5: "Gain {0}% chance to inflict Chill on hit",
+  6: "Gain {0}% chance to inflict Confuse on hit",
+  7: "Gain {0}% chance to inflict Daze on hit",
+  8: "Gain {0}% chance to inflict Disarm on hit",
+  9: "Gain {0}% chance to inflict Fear on hit",
+  10: "Gain {0}% chance to inflict Intimidate on hit",
+  11: "Gain {0}% chance to inflict Poison on hit",
+  12: "Gain {0}% chance to inflict Pull on hit",
+  13: "Gain {0}% chance to inflict Push on hit",
+  14: "Gain {0}% chance to inflict Silence on hit",
+  15: "Gain {0}% chance to inflict Sleep on hit",
+  16: "Gain {0}% chance to inflict Slow on hit",
+  17: "Gain {0}% chance to inflict Stun on hit",
+  18: "Gain {0}% chance to inflict Taunt on hit",
+  19: "Gain {0}% chance to inflict Daze on basic attack when targeting a channeling enemy",
+  20: "Increase Block chance by +{0}%",
+  21: "Increase Spell Block chance by +{0}%",
+  22: "Increase Critical Hit damage multiplier by +{0}",
+  23: "Increase Critical Hit chance by +{0}%"
+}
+ACCESSORY_TYPES = {
+  0: 'None',
+  1: 'Accessory',
+  2: 'Shield',
+  3: 'Focus'
+}
+const ACCESSORY_BONUS_DESCRIPTIONS = {
+  1: "Increase Physical Accuracy by +{0}%",
+  2: "Increase Magical Accuracy by +{0}%",
+  3: "Increase Block chance by +{0}%",
+  4: "Increase Spell Block chance by +{0}%",
+  5: "Increase Speed by {0}%",
+  6: "Increase Evasion by {0}%",
+  7: "Increase Status Effect Resistance by +{0}%",
+  8: "Increase Banish Resistance by +{0}%",
+  9: "Increase Bleed Resistance by +{0}%",
+  10: "Increase Blind Resistance by +{0}%",
+  11: "Increase Burn Resistance by +{0}%",
+  12: "Increase Chill Resistance by +{0}%",
+  13: "Increase Confuse Resistance by +{0}%",
+  14: "Increase Daze Resistance by +{0}%",
+  15: "Increase Disarm Resistance by +{0}%",
+  16: "Increase Fear Resistance by +{0}%",
+  17: "Increase Intimidate Resistance by +{0}%",
+  18: "Increase Poison Resistance by +{0}%",
+  19: "Increase Pull Resistance by +{0}%",
+  20: "Increase Push Resistance by +{0}%",
+  21: "Increase Silence Resistance by +{0}%",
+  22: "Increase Sleep Resistance by +{0}%",
+  23: "Increase Slow Resistance by +{0}%",
+  24: "Increase Stun Resistance by +{0}%",
+  25: "Increase Taunt Resistance by +{0}%",
+  26: "Increase Critical Hit Multiplier by +{0}",
+  27: "Increase Physical Defense by +{0}%",
+  28: "Increase Magical Defense by +{0}%",
+  29: "Decrease Physical Accuracy by -{0}%",
+  30: "Decrease Magical Accuracy by -{0}%",
+  31: "Increase Physical Damage by +{0}%",
+  32: "Increase Magical Damage by +{0}%"
+}
+
 function timeConverter(UNIX_timestamp){
   var a = new Date(UNIX_timestamp * 1000);
   return a.toUTCString();
@@ -355,7 +452,7 @@ function whoDis(address, event) {
         name
     }
   }`
-  graph_uri = "https://defi-kingdoms-community-api-gateway-co06z8vi.uc.gateway.dev/graphql"
+  graph_uri = "https://api.defikingdoms.com/graphql"
   // lookup summon history
   var request = new XMLHttpRequest();
   request.open('POST', graph_uri, true);
@@ -408,6 +505,48 @@ function loadPet(petId) {
     }
   };
   request.send();
+}
+function loadEquipment(equipmentCategory, itemId, typeProperty, equipmentPath) {
+  // look for equipment details
+  query = `query {
+    ${equipmentCategory}(
+        where: { id: "${itemId}" } 
+    ) 
+    {
+        ${typeProperty}
+        craftedBy
+        displayId
+        rarity
+        dye1
+        dye2
+    }
+  }`
+  graph_uri = "https://api.defikingdoms.com/graphql"
+  var request = new XMLHttpRequest();
+  request.open('POST', graph_uri, true);
+  request.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+  request.onload = function() {
+    if (!request.status || (request.status >= 400)) {
+      alert('Failed to load equipment details.');
+    } else {
+      var resp = JSON.parse(request.responseText);
+      if ('error' in resp) {
+        alert(resp['error']);
+      } else {
+        if (resp['data'][equipmentCategory][0] != undefined) {
+          equipmentType = resp['data'][equipmentCategory][0][typeProperty];
+          displayId = resp['data'][equipmentCategory][0]['displayId'];
+          pn = document.getElementById(`equipmentImage_${itemId}`);
+          pn.setAttribute('src', `https://defi-kingdoms.b-cdn.net/art-assets/equipment/${equipmentPath}/${equipmentType}-${displayId}.png`);
+          pd = document.getElementById(`equipmentData_${itemId}`);
+          pd.innerHTML = EQUIPMENT_RARITY[resp['data'][equipmentCategory][0]['rarity']];
+        } else {
+          console.log(`Equipment not found: ${itemId}`);
+        }
+      }
+    }
+  };
+  request.send(JSON.stringify({ 'query': query }));
 }
 function docHeight() {
   var body = document.body,

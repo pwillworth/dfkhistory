@@ -23,6 +23,12 @@ def heroes():
 def pets():
     return render_template('pets.html')
 
+@app.route("/weapon")
+@app.route("/accessory")
+@app.route("/equipment")
+def equipment():
+    return render_template('equipment.html')
+
 @app.route("/hero/<heroid>")
 def hero_page(heroid=None):
     heroIdLong = utils.translateHeroId(escape(heroid))
@@ -46,6 +52,30 @@ def pet_page(petid=None):
         return render_template('pet.html', petIdLong=petIdLong, petIdShort=petid, activeTab=tabOption)
     else:
         return render_template('pet.html', petIdLong=23257, petIdShort=23257, activeTab=tabOption)
+
+@app.route("/weapon/<weaponid>")
+def weapon_page(weaponid=None):
+    weaponIdLong = utils.translateHeroId(escape(weaponid))
+    tabOption = escape(request.args.get('tab', 'events'))
+    if tabOption not in ['events','sales']:
+        tabOption = 'events'
+
+    if type(weaponIdLong) is int or weaponIdLong.isnumeric():
+        return render_template('weapon.html', equipmentIdLong=weaponIdLong, equipmentIdShort=weaponid, activeTab=tabOption)
+    else:
+        return render_template('weapon.html', equipmentIdLong=23257, equipmentIdShort=23257, activeTab=tabOption)
+
+@app.route("/accessory/<accessoryid>")
+def accessory_page(accessoryid=None):
+    accessoryIdLong = utils.translateHeroId(escape(accessoryid))
+    tabOption = escape(request.args.get('tab', 'events'))
+    if tabOption not in ['events','sales']:
+        tabOption = 'events'
+
+    if type(accessoryIdLong) is int or accessoryIdLong.isnumeric():
+        return render_template('accessory.html', equipmentIdLong=accessoryIdLong, equipmentIdShort=accessoryid, activeTab=tabOption)
+    else:
+        return render_template('accessory.html', equipmentIdLong=23257, equipmentIdShort=23257, activeTab=tabOption)
 
 @app.route("/hero/<heroid>/history/<hevent>", methods=['GET','POST'])
 def hero_history(heroid=None, hevent=None):
@@ -85,6 +115,44 @@ def pet_history(petid=None, hevent=None):
         return { "results": db.getPetLifeEvents(petid, orderOption) }
     elif hevent == 'sales':
         return { "results": db.getPetSales(petid, orderOption) }
+    else:
+        app.logger.warn('Invalid event type for history call: {0}'.format(hevent))
+        return { "results": [], "error": "Invalid event type" }
+
+@app.route("/weapon/<weaponid>/history/<hevent>", methods=['GET','POST'])
+def weapon_history(weaponid=None, hevent=None):
+    weaponid = utils.translateHeroId(escape(weaponid))
+    if type(weaponid) is not int and not weaponid.isnumeric():
+        app.logger.warn('Invalid weapon id for history call: {0}'.format(hevent))
+        return { "results": [], "error": "Invalid weapon id" }
+
+    hevent = escape(hevent)
+
+    orderOption = escape(request.args.get('order', ''))
+
+    if hevent == 'life':
+        return { "results": db.getEquipmentLifeEvents(weaponid, 'weapon', orderOption) }
+    elif hevent == 'sales':
+        return { "results": db.getEquipmentSales(weaponid, 'weapon', orderOption) }
+    else:
+        app.logger.warn('Invalid event type for history call: {0}'.format(hevent))
+        return { "results": [], "error": "Invalid event type" }
+
+@app.route("/accessory/<accessoryid>/history/<hevent>", methods=['GET','POST'])
+def accessory_history(accessoryid=None, hevent=None):
+    accessoryid = utils.translateHeroId(escape(accessoryid))
+    if type(accessoryid) is not int and not accessoryid.isnumeric():
+        app.logger.warn('Invalid accessory id for history call: {0}'.format(hevent))
+        return { "results": [], "error": "Invalid accessory id" }
+
+    hevent = escape(hevent)
+
+    orderOption = escape(request.args.get('order', ''))
+
+    if hevent == 'life':
+        return { "results": db.getEquipmentLifeEvents(accessoryid, 'accessory', orderOption) }
+    elif hevent == 'sales':
+        return { "results": db.getEquipmentSales(accessoryid, 'accessory', orderOption) }
     else:
         app.logger.warn('Invalid event type for history call: {0}'.format(hevent))
         return { "results": [], "error": "Invalid event type" }

@@ -184,6 +184,7 @@ def getLevelUps(heroId, order):
 
 def getLifeEvents(heroId, order):
     result = []
+    heroEvents = ('darkSummonSacrifice','HeroClaimed','crystalvaleRewardPJ','crystalvaleStatUpPJ','gen0rerollStatUp','geneRerollStatUp')
     if order == 'desc':
         orderStr = 'ORDER BY blockTimestampStart DESC'
     else:
@@ -191,7 +192,7 @@ def getLifeEvents(heroId, order):
     con = aConn()
     with con:
         with con.cursor() as cur:
-            cur.execute('SELECT network, txHash, blockNumber, owner, blockTimestamp, eventType, eventData AS enhancementItem from events WHERE heroId=%s AND eventType!=%s ORDER BY blockTimestamp', (heroId,'CompletedPetExchange'))
+            cur.execute('SELECT network, txHash, blockNumber, owner, blockTimestamp, eventType, eventData AS enhancementItem from events WHERE heroId=%s AND eventType IN %s ORDER BY blockTimestamp', (heroId, heroEvents))
             result = cur.fetchall()
             cur.execute('SELECT network, txHashHero, blockNumberHero, owner, blockTimestampHero, crystalEvent, enhancementItem, summonerId, assistantId from summons WHERE heroId=%s ORDER BY blockTimestampHero', (heroId,))
             sresult = cur.fetchall()
@@ -248,6 +249,35 @@ def getPetSales(petId, order):
     with con:
         with con.cursor() as cur:
             cur.execute('SELECT network, txHash, blockNumber, owner, blockTimestamp, winner, salePrice from sales WHERE itemType=%s AND itemId=%s {0}'.format(orderStr), ('pet', petId))
+            result = cur.fetchall()
+    return result
+
+def getEquipmentLifeEvents(equipmentId, equipmentType, order):
+    result = []
+    equipmentType = equipmentType.capitalize()
+    equipEvents = ('{0}Created'.format(equipmentType), '{0}Updated'.format(equipmentType))
+    if order == 'desc':
+        orderStr = 'ORDER BY blockTimestamp DESC'
+    else:
+        orderStr = 'ORDER BY blockTimestamp'
+    con = aConn()
+    with con:
+        with con.cursor() as cur:
+            cur.execute('SELECT network, txHash, blockNumber, owner, blockTimestamp, eventType, eventData from events WHERE heroId=%s AND eventType IN %s {0}'.format(orderStr), (equipmentId, equipEvents))
+            result = cur.fetchall()
+
+    return result
+
+def getEquipmentSales(equipmentId, equipmentType, order):
+    result = []
+    if order == 'desc':
+        orderStr = 'ORDER BY blockTimestamp DESC'
+    else:
+        orderStr = 'ORDER BY blockTimestamp'
+    con = aConn()
+    with con:
+        with con.cursor() as cur:
+            cur.execute('SELECT network, txHash, blockNumber, owner, blockTimestamp, winner, salePrice from sales WHERE itemType=%s AND itemId=%s {0}'.format(orderStr), (equipmentType, equipmentId))
             result = cur.fetchall()
     return result
 

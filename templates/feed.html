@@ -364,6 +364,7 @@ function lifeEventsRow(lev) {
     var eventImage = '';
     var eventName = lev[5];
     var eventDetails = '';
+    var itemType = 'hero';
 
     if (lev[7] != undefined) {
     var stone = lev[6];
@@ -459,8 +460,34 @@ function lifeEventsRow(lev) {
     } else if (lev[5] == 'darkSummonSacrifice') {
     eventImage = '<img style="max-width: 60px;" src="/static/images/rip-badge.png" title="Perished in Dark Summoning Pit" />';
     eventName = 'Lost Hero in Dark Summon Pit';
+    } else if (lev[5] == 'CompletedPetExchange') {
+      itemType = 'pet';
+    } else if (lev[5] == 'WeaponCreated') {
+      itemType = 'weapon';
+    } else if (lev[5] == 'ArmorCreated') {
+      itemType = 'armor';
+    } else if (lev[5] == 'AccessoryCreated') {
+      itemType = 'accessory';
     }
-    heroLink = `<div class="feedHeroBox"><a href="/hero/${lev[3]}" target="_blank"><div class="feedHeroLink heroEvent">Life Event</div><div id="heroImage" style="height: 200px;" title="click to view hero history page"><img src="https://hero-generator-mhpyphgqca-uc.a.run.app/image/${lev[3]}" style="height: 200px;image-rendering:pixelated;" /></div><div class="feedHeroLink">${evHero}</div></a></div>`;
+
+    if (itemType == 'pet') {
+      heroLink = `<div class="feedHeroBox"><a href="http://www.adfk.app/pets/${lev[3]}" target="_blank"><div class="feedHeroLink heroEvent">Life Event</div><div id="heroImage" style="height: 200px;" title="click to view pet on ADFK"><img src="https://pets.defikingdoms.com/image/${lev[3]}" style="height: 200px;image-rendering:pixelated;" /></div><div class="feedHeroLink">${evHero}</div></a></div>`;
+    } else if (itemType == 'weapon') {
+      heroLink = `<div class="feedHeroBox"><a href="/weapon/${lev[3]}" target="_blank"><div class="feedHeroLink heroEvent">Weapon Event</div><div id="heroImage" style="height: 200px;" title="click to view equipment history page"><img id="equipmentImage_${lev[3]}" src="/static/images/equipment-icon.png" style="height: 200px;image-rendering:pixelated;" /></div><div class="feedHeroLink">${evHero}</div></a></div>`;
+      eventDetails = `<div id="equipmentData_${lev[3]}"></div>`
+      loadEquipment('weapons', lev[3], 'weaponType', 'weapon');
+    } else if (itemType == 'armor') {
+      heroLink = `<div class="feedHeroBox"><a href="/armor/${lev[3]}" target="_blank"><div class="feedHeroLink heroEvent">Armor Event</div><div id="heroImage" style="height: 200px;" title="click to view equipment history page"><img id="equipmentImage_${lev[3]}" src="/static/images/equipment-icon.png" style="height: 200px;image-rendering:pixelated;" /></div><div class="feedHeroLink">${evHero}</div></a></div>`;
+      eventDetails = `<div id="equipmentData_${lev[3]}"></div>`
+      loadEquipment('armors', lev[3], 'armorType', 'armor');
+    } else if (itemType == 'accessory') {
+      heroLink = `<div class="feedHeroBox"><a href="/accessory/${lev[3]}" target="_blank"><div class="feedHeroLink heroEvent">Accessory Event</div><div id="heroImage" style="height: 200px;" title="click to view equipment history page"><img id="equipmentImage_${lev[3]}" src="/static/images/equipment-icon.png" style="height: 200px;image-rendering:pixelated;" /></div><div class="feedHeroLink">${evHero}</div></a></div>`;
+      eventDetails = `<div id="equipmentData_${lev[3]}"></div>`
+      loadEquipment('accessories', lev[3], 'equipmentType', 'accessory');
+    } else {
+      heroLink = `<div class="feedHeroBox"><a href="/hero/${lev[3]}" target="_blank"><div class="feedHeroLink heroEvent">Life Event</div><div id="heroImage" style="height: 200px;" title="click to view hero history page"><img src="https://hero-generator-mhpyphgqca-uc.a.run.app/image/${lev[3]}" style="height: 200px;image-rendering:pixelated;" /></div><div class="feedHeroLink">${evHero}</div></a></div>`;
+    }
+
     items = `${eventImage}`;
     txFacts = `<div>${lDate}</div><div>${eventName}</div>`;
     results = `<div>${eventDetails}</div>`;
@@ -524,17 +551,26 @@ function salesRow(sale) {
             token = 'jade';
             break;
         default:
-            tokens = {}
+            token = '';
     }
     var salePrice = sale[6];
     if (sale[8] == 'pet') {
       heroLink = `<div class="feedHeroBox"><a href="http://www.adfk.app/pets/${sale[3]}" target="_blank"><div class="feedHeroLink heroSale">Sold Pet</div><div id="heroImage" style="height: 200px;" title="click to view pet on ADFK"><img src="https://pets.defikingdoms.com/image/${sale[3]}" style="height: 200px;image-rendering:pixelated;" /></div><div class="feedHeroLink">${saleHero}</div></a></div>`;
+    } else if (sale[8] == 'weapon') {
+      heroLink = `<div class="feedHeroBox"><a href="/weapon/${sale[3]}" target="_blank"><div class="feedHeroLink heroSale">Sold Weapon</div><div id="heroImage" style="height: 200px;" title="click to view equipment history page"><img id="equipmentImage_${sale[3]}" src="/static/images/equipment-icon.png" style="height: 200px;image-rendering:pixelated;" /></div><div class="feedHeroLink">${saleHero}</div></a></div>`;
+      loadEquipment('weapons', sale[3], 'weaponType', 'weapon');
+    } else if (sale[8] == 'armor') {
+      heroLink = `<div class="feedHeroBox"><a href="/armor/${sale[3]}" target="_blank"><div class="feedHeroLink heroSale">Sold Armor</div><div id="heroImage" style="height: 200px;" title="click to view equipment history page"><img id="equipmentImage_${sale[3]}" src="/static/images/equipment-icon.png" style="height: 200px;image-rendering:pixelated;" /></div><div class="feedHeroLink">${saleHero}</div></a></div>`;
+      loadEquipment('armors', sale[3], 'armorType', 'armor');
+    } else if (sale[8] == 'accessory') {
+      heroLink = `<div class="feedHeroBox"><a href="/accessory/${sale[3]}" target="_blank"><div class="feedHeroLink heroSale">Sold Accessory</div><div id="heroImage" style="height: 200px;" title="click to view equipment history page"><img id="equipmentImage_${sale[3]}" src="/static/images/equipment-icon.png" style="height: 200px;image-rendering:pixelated;" /></div><div class="feedHeroLink">${saleHero}</div></a></div>`;
+      loadEquipment('accessories', sale[3], 'equipmentType', 'accessory');
     } else {
       heroLink = `<div class="feedHeroBox"><a href="/hero/${sale[3]}" target="_blank"><div class="feedHeroLink heroSale">Sold Hero</div><div id="heroImage" style="height: 200px;" title="click to view hero history page"><img src="https://hero-generator-mhpyphgqca-uc.a.run.app/image/${sale[3]}" style="height: 200px;image-rendering:pixelated;" /></div><div class="feedHeroLink">${saleHero}</div></a></div>`;
     }
     items = `<img style="max-width:60px;" src="/static/images/${token}.png" />`;
     txFacts = `<div>${lDate}</div><div title="${sale[7]}" onclick="copyTitle(event);whoDis('${sale[7]}', event);" style="cursor: pointer;">${owner}</div>`;
-    results = `<div><span style="font-weight: bold;">Winner:</span> <span title="${sale[5]}" onclick="copyTitle(event);whoDis('${sale[5]}', event);" style="cursor: pointer;">${winner}</span></div><div><span style="font-weight: bold;">Sale Price:</span> <img style="max-width:16px;" src="/static/images/${token}-perspective.png" />${salePrice.toFixed(1)}</div>`;
+    results = `<div><span style="font-weight: bold;">Winner:</span> <span title="${sale[5]}" onclick="copyTitle(event);whoDis('${sale[5]}', event);" style="cursor: pointer;">${winner}</span></div><div><span style="font-weight: bold;">Sale Price:</span> <img style="max-width:16px;" src="/static/images/${token}-perspective.png" />${salePrice.toFixed(1)}</div><div id="equipmentData_${sale[3]}"></div>`;
     newRow.innerHTML = `<td style="width: 200px;">${heroLink}</td><td style="text-align:center;">${items}</td><td>${txFacts}</td><td>${results}</td>`;
     return newRow;
 }
@@ -676,7 +712,7 @@ function purchasesRow(purchase) {
             token = 'jade';
             break;
         default:
-            tokens = {}
+            token = '';
     }
     var salePrice = purchase[6];
     if (purchase[8] == 'pet') {
@@ -772,7 +808,8 @@ function refreshLists() {
   </div>
   <img style="width: 100%" src="/static/images/parchment-bottom.png" />
 </div>
-<div style="position:fixed;left:0;bottom:160px;margin:16px;"><a href="/player" title="Player History"><img style="width: 64px;" src="/static/images/player.png" /></a></div>
+<div style="position:fixed;left:0;bottom:240px;margin:16px;"><a href="/player" title="Player History"><img style="width: 64px;" src="/static/images/player.png" /></a></div>
+<div style="position:fixed;left:0;bottom:160px;margin:16px;"><a href="/equipment" title="Equipment Selection"><img style="width: 64px;" src="/static/images/equipment-icon.png" /></a></div>
 <div style="position:fixed;left:0;bottom:80px;margin:16px;"><a href="/pets" title="Return to Pet Selection"><img style="width: 64px;" src="/static/images/pets-icon.png" /></a></div>
 <div style="position:fixed;left:0;bottom:0px;margin:16px;"><a href="/heroes" title="Return to Hero Selection"><img style="width: 64px;" src="/static/images/oldportal.png" /></a></div>
 <div style="position:fixed;right:0;bottom:0px;margin:8px;"><a href="/about" title="FAQ"><img style="width: 64px;opacity: 65%;" src="/static/images/help.png" /></a></div>
