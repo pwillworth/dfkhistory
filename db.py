@@ -211,6 +211,19 @@ def getSales(heroId, order):
             result = cur.fetchall()
     return result
 
+def getRentals(heroId, order):
+    result = []
+    if order == 'desc':
+        orderStr = 'ORDER BY blockTimestamp DESC'
+    else:
+        orderStr = 'ORDER BY blockTimestamp'
+    con = aConn()
+    with con:
+        with con.cursor() as cur:
+            cur.execute('SELECT network, txHash, blockNumber, owner, blockTimestamp, winner, salePrice from sales WHERE itemType=%s AND itemId=%s {0}'.format(orderStr), ('assist', heroId))
+            result = cur.fetchall()
+    return result
+
 def getSummons(heroId, order):
     result = []
     if order == 'desc':

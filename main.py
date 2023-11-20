@@ -96,6 +96,8 @@ def hero_history(heroid=None, hevent=None):
         return { "results": db.getSales(heroid, orderOption) }
     elif hevent == 'summons':
         return { "results": db.getSummons(heroid, orderOption) }
+    elif hevent == 'rentals':
+        return { "results": db.getRentals(heroid, orderOption) }
     else:
         app.logger.warn('Invalid event type for history call: {0}'.format(hevent))
         return { "results": [], "error": "Invalid event type" }

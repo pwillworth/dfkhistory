@@ -456,7 +456,11 @@ function salesTable(data) {
               tokens = {}
       }
       var salePrice = sale[6];
-      newRow.innerHTML = `<td>${sale[8]}</td><td title="${sale[3]}" onclick="copyTitle(event);" style="cursor: pointer;"><a href="/${sale[8]}/${sale[3]}">${saleHero}</a></td><td>${lDate}</td><td title="${sale[5]}" onclick="copyTitle(event);whoDis('${sale[5]}', event);" style="cursor: pointer;">${winner}</td><td><img style="max-width:16px;" src="/static/images/${token}-perspective.png" />${salePrice.toFixed(1)}</td>`;
+      var itemType = sale[8];
+      if (itemType == 'assist') {
+        itemType = 'hero';
+      }
+      newRow.innerHTML = `<td>${sale[8]}</td><td title="${sale[3]}" onclick="copyTitle(event);" style="cursor: pointer;"><a href="/${itemType}/${sale[3]}">${saleHero}</a></td><td>${lDate}</td><td title="${sale[5]}" onclick="copyTitle(event);whoDis('${sale[5]}', event);" style="cursor: pointer;">${winner}</td><td><img style="max-width:16px;" src="/static/images/${token}-perspective.png" />${salePrice.toFixed(1)}</td>`;
       listElm.appendChild(newRow);
     });
   } else {

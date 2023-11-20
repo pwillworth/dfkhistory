@@ -565,12 +565,14 @@ function salesRow(sale) {
     } else if (sale[8] == 'accessory') {
       heroLink = `<div class="feedHeroBox"><a href="/accessory/${sale[3]}" target="_blank"><div class="feedHeroLink heroSale">Sold Accessory</div><div id="heroImage" style="height: 200px;" title="click to view equipment history page"><img id="equipmentImage_${sale[3]}" src="/static/images/equipment-icon.png" style="height: 200px;image-rendering:pixelated;" /></div><div class="feedHeroLink">${saleHero}</div></a></div>`;
       loadEquipment('accessories', sale[3], 'equipmentType', 'accessory');
+    } else if (sale[8] == 'assist') {
+      heroLink = `<div class="feedHeroBox"><a href="/hero/${sale[3]}" target="_blank"><div class="feedHeroLink heroSale">Rented Hero</div><div id="heroImage" style="height: 200px;" title="click to view hero history page"><img src="https://hero-generator-mhpyphgqca-uc.a.run.app/image/${sale[3]}" style="height: 200px;image-rendering:pixelated;" /></div><div class="feedHeroLink">${saleHero}</div></a></div>`;
     } else {
       heroLink = `<div class="feedHeroBox"><a href="/hero/${sale[3]}" target="_blank"><div class="feedHeroLink heroSale">Sold Hero</div><div id="heroImage" style="height: 200px;" title="click to view hero history page"><img src="https://hero-generator-mhpyphgqca-uc.a.run.app/image/${sale[3]}" style="height: 200px;image-rendering:pixelated;" /></div><div class="feedHeroLink">${saleHero}</div></a></div>`;
     }
     items = `<img style="max-width:60px;" src="/static/images/${token}.png" />`;
     txFacts = `<div>${lDate}</div><div title="${sale[7]}" onclick="copyTitle(event);whoDis('${sale[7]}', event);" style="cursor: pointer;">${owner}</div>`;
-    results = `<div><span style="font-weight: bold;">Winner:</span> <span title="${sale[5]}" onclick="copyTitle(event);whoDis('${sale[5]}', event);" style="cursor: pointer;">${winner}</span></div><div><span style="font-weight: bold;">Sale Price:</span> <img style="max-width:16px;" src="/static/images/${token}-perspective.png" />${salePrice.toFixed(1)}</div><div id="equipmentData_${sale[3]}"></div>`;
+    results = `<div><span style="font-weight: bold;">Winner:</span> <span title="${sale[5]}" onclick="copyTitle(event);whoDis('${sale[5]}', event);" style="cursor: pointer;">${winner}</span></div><div><span style="font-weight: bold;">Price:</span> <img style="max-width:16px;" src="/static/images/${token}-perspective.png" />${salePrice.toFixed(1)}</div><div id="equipmentData_${sale[3]}"></div>`;
     newRow.innerHTML = `<td style="width: 200px;">${heroLink}</td><td style="text-align:center;">${items}</td><td>${txFacts}</td><td>${results}</td>`;
     return newRow;
 }
@@ -717,6 +719,8 @@ function purchasesRow(purchase) {
     var salePrice = purchase[6];
     if (purchase[8] == 'pet') {
       heroLink = `<div class="feedHeroBox"><a href="/pet/${purchase[3]}" target="_blank"><div class="feedHeroLink heroSale">Purchased Pet</div><div id="heroImage" style="height: 200px;" title="click to view pet details"><img src="https://pets.defikingdoms.com/image/${purchase[3]}" style="height: 200px;image-rendering:pixelated;" /></div><div class="feedHeroLink">${purchaseHero}</div></a></div>`;
+    } else if (purchase[8] == 'assist') {
+      heroLink = `<div class="feedHeroBox"><a href="/hero/${purchase[3]}" target="_blank"><div class="feedHeroLink heroSale">Hired Hero</div><div id="heroImage" style="height: 200px;" title="click to view hero history page"><img src="https://hero-generator-mhpyphgqca-uc.a.run.app/image/${purchase[3]}" style="height: 200px;image-rendering:pixelated;" /></div><div class="feedHeroLink">${purchaseHero}</div></a></div>`;
     } else {
       heroLink = `<div class="feedHeroBox"><a href="/hero/${purchase[3]}" target="_blank"><div class="feedHeroLink heroSale">Purchased Hero</div><div id="heroImage" style="height: 200px;" title="click to view hero history page"><img src="https://hero-generator-mhpyphgqca-uc.a.run.app/image/${purchase[3]}" style="height: 200px;image-rendering:pixelated;" /></div><div class="feedHeroLink">${purchaseHero}</div></a></div>`;
     }

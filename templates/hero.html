@@ -15,7 +15,8 @@ var dataLoaded = {
   'events': -1,
   'levels': -1,
   'sales': -1,
-  'summons': -1
+  'summons': -1,
+  'rentals': -1
 };
 const heroIdLong = '{{ heroIdLong }}';
 const heroIdShort = '{{ heroIdShort }}';
@@ -37,6 +38,9 @@ window.onload = (event) => {
           break;
         case "View Summons":
           switchView('summons');
+          break;
+        case "View Rentals":
+          switchView('rentals');
           break;
         default:
           //nada
@@ -71,6 +75,9 @@ function switchView(dataList) {
         break;
       case 'summons':
         loadSummons();
+        break;
+      case 'rentals':
+        loadRentals();
         break;
       default:
         console.log('invalid data type');
@@ -567,6 +574,64 @@ function summonsTable(data) {
   var waitElm = document.getElementById('medBusyWait');
   waitElm.style.display = 'none';
 }
+function loadRentals() {
+  var waitElm = document.getElementById('medBusyWait');
+  waitElm.style.display = 'block';
+  // lookup hero rental history
+  var request = new XMLHttpRequest();
+  request.open('POST', `/hero/${heroIdLong}/history/rentals`, true);
+  request.onload = function() {
+    if (!request.status || (request.status >= 400)) {
+      alert('Failed to load rentals.');
+    } else {
+      var resp = JSON.parse(request.responseText);
+      if ('error' in resp) {
+        document.getElementById('rentalList').innerHTML = resp['error'];
+      } else {
+        dataLoaded['rentals'] = resp['results'].length;
+        rentalsTable(resp);
+      }
+    }
+  };
+  request.send();
+}
+function rentalsTable(data) {
+  var listElm = document.getElementById('rentalsList');
+  var newRow = document.createElement('tr');
+  listElm.innerHTML = '';
+  newRow.innerHTML = '<th>Renter</th><th>Block Date</th><th>Hirer</th><th>Sale Price</th>';
+  listElm.appendChild(newRow);
+  if (data['results'].length > 0) {
+    data['results'].forEach((sale) => {
+      var newRow = document.createElement('tr');
+      var addr = sale[3].substring(0, 6) + '...' + sale[3].substring(38, 42);
+      var winner = sale[5].substring(0, 6) + '...' + sale[5].substring(38, 42);
+      var lDate = dateConverter(sale[4]);
+      switch (sale[0]) {
+          case 'harmony':
+              token = 'jewel';
+              break;
+          case 'dfkchain':
+              token = 'crystal';
+              break;
+          case 'klaytn':
+              token = 'jade';
+              break;
+          default:
+              tokens = {}
+      }
+      var salePrice = sale[6];
+      newRow.innerHTML = `<td title="${sale[3]}" onclick="copyTitle(event);whoDis('${sale[3]}', event);" style="cursor: pointer;">${addr}</td><td>${lDate}</td><td title="${sale[5]}" onclick="copyTitle(event);whoDis('${sale[5]}', event);" style="cursor: pointer;">${winner}</td><td><img style="max-width:16px;" src="/static/images/${token}-perspective.png" />${salePrice.toFixed(1)}</td>`;
+      listElm.appendChild(newRow);
+    });
+  } else {
+    var newRow = document.createElement('tr');
+    newRow.innerHTML = '<td colspan=4>None Found</td>';
+    listElm.appendChild(newRow);
+  }
+  var waitElm = document.getElementById('medBusyWait');
+  waitElm.style.display = 'none';
+}
 function addBadge(badge) {
   contElm = document.getElementById('heroBadges');
   badgeElm = document.createElement('img');
@@ -604,6 +669,7 @@ function addBadge(badge) {
     <button id="levelsHeader" class="toggleButton" title="View Level Ups">Levels</button>
     <button id="salesHeader" class="toggleButton" title="View Sales">Sales</button>
     <button id="summonsHeader" class="toggleButton" title="View Summons">Summons</button>
+    <button id="rentalsHeader" class="toggleButton" title="View Rentals">Rentals</button>
   </div>
   <div id="heroData" style="margin: 12px;">
     <img style="width: 100%" src="/static/images/parchment-top.png" />
@@ -612,6 +678,7 @@ function addBadge(badge) {
       <table id="levelsList" class="heroTable"><tr><th>Enh.</th><th>owner</th><th>Block Date</th><th>To Level</th><th>Bonus Choices</th><th>Stat Ups</th></tr></table>
       <table id="salesList" class="heroTable"><tr><th>Seller</th><th>Block Date</th><th>Winner</th><th>Sale Price</th></tr></table>
       <table id="summonsList" class="heroTable"><tr><th>Enh.</th><th>owner</th><th>Block Time</th><th>New Hero</th><th>Summoner</th><th>Assistant</th></tr></table>
+      <table id="rentalsList" class="heroTable"><tr><th>Renter</th><th>Block Date</th><th>Hirer</th><th>Rental Price</th></tr></table>
       <div id="medBusyWait"><div id="animate1"><div id="animate1Img"><img src="/static/images/swamp-front.gif" /></div></div></div>
     </div>
     <img style="width: 100%" src="/static/images/parchment-bottom.png" />
