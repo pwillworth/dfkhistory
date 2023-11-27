@@ -163,6 +163,12 @@ def accessory_history(accessoryid=None, hevent=None):
 def about():
     return render_template('about.html')
 
+@app.route("/memberstats")
+def memberstats():
+    memberStats = db.getMemberStats()
+
+    return { "memberCount" : memberStats[0], "latestExpiration" : memberStats[1] }
+
 @app.route("/auth")
 def auth():
     account = request.args.get("account", "")

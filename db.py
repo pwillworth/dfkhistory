@@ -421,6 +421,18 @@ def getPlayerHatches(playerId, order, timestampLimit=0):
             result = cur.fetchall()
     return result
 
+def getMemberStats():
+    results = [0,0]
+    requestTime = datetime.now(timezone.utc).timestamp()
+    con = aConn()
+    with con:
+        with con.cursor() as cur:
+            cur.execute('SELECT Count(account), Max(expiresTimestamp) FROM members WHERE expiresTimestamp > %s', (requestTime,))
+            results = cur.fetchone()
+    if results != None:
+        results = [results[0], datetime.fromtimestamp(results[1]).isoformat()]
+    return results
+
 def createDatabase():
     con = aConn()
     with con:
