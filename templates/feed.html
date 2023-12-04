@@ -471,7 +471,7 @@ function lifeEventsRow(lev) {
     }
 
     if (itemType == 'pet') {
-      heroLink = `<div class="feedHeroBox"><a href="http://www.adfk.app/pets/${lev[3]}" target="_blank"><div class="feedHeroLink heroEvent">Life Event</div><div id="heroImage" style="height: 200px;" title="click to view pet on ADFK"><img src="https://pets.defikingdoms.com/image/${lev[3]}" style="height: 200px;image-rendering:pixelated;" /></div><div class="feedHeroLink">${evHero}</div></a></div>`;
+      heroLink = `<div class="feedHeroBox"><a href="/pet/${lev[3]}" target="_blank"><div class="feedHeroLink heroEvent">Life Event</div><div id="heroImage" style="height: 200px;" title="click to view pet on ADFK"><img src="https://pets.defikingdoms.com/image/${lev[3]}" style="height: 200px;image-rendering:pixelated;" /></div><div class="feedHeroLink">${evHero}</div></a></div>`;
     } else if (itemType == 'weapon') {
       heroLink = `<div class="feedHeroBox"><a href="/weapon/${lev[3]}" target="_blank"><div class="feedHeroLink heroEvent">Weapon Event</div><div id="heroImage" style="height: 200px;" title="click to view equipment history page"><img id="equipmentImage_${lev[3]}" src="/static/images/equipment-icon.png" style="height: 200px;image-rendering:pixelated;" /></div><div class="feedHeroLink">${evHero}</div></a></div>`;
       eventDetails = `<div id="equipmentData_${lev[3]}"></div>`
@@ -555,7 +555,7 @@ function salesRow(sale) {
     }
     var salePrice = sale[6];
     if (sale[8] == 'pet') {
-      heroLink = `<div class="feedHeroBox"><a href="http://www.adfk.app/pets/${sale[3]}" target="_blank"><div class="feedHeroLink heroSale">Sold Pet</div><div id="heroImage" style="height: 200px;" title="click to view pet on ADFK"><img src="https://pets.defikingdoms.com/image/${sale[3]}" style="height: 200px;image-rendering:pixelated;" /></div><div class="feedHeroLink">${saleHero}</div></a></div>`;
+      heroLink = `<div class="feedHeroBox"><a href="/pet/${sale[3]}" target="_blank"><div class="feedHeroLink heroSale">Sold Pet</div><div id="heroImage" style="height: 200px;" title="click to view pet on ADFK"><img src="https://pets.defikingdoms.com/image/${sale[3]}" style="height: 200px;image-rendering:pixelated;" /></div><div class="feedHeroLink">${saleHero}</div></a></div>`;
     } else if (sale[8] == 'weapon') {
       heroLink = `<div class="feedHeroBox"><a href="/weapon/${sale[3]}" target="_blank"><div class="feedHeroLink heroSale">Sold Weapon</div><div id="heroImage" style="height: 200px;" title="click to view equipment history page"><img id="equipmentImage_${sale[3]}" src="/static/images/equipment-icon.png" style="height: 200px;image-rendering:pixelated;" /></div><div class="feedHeroLink">${saleHero}</div></a></div>`;
       loadEquipment('weapons', sale[3], 'weaponType', 'weapon');
@@ -719,6 +719,15 @@ function purchasesRow(purchase) {
     var salePrice = purchase[6];
     if (purchase[8] == 'pet') {
       heroLink = `<div class="feedHeroBox"><a href="/pet/${purchase[3]}" target="_blank"><div class="feedHeroLink heroSale">Purchased Pet</div><div id="heroImage" style="height: 200px;" title="click to view pet details"><img src="https://pets.defikingdoms.com/image/${purchase[3]}" style="height: 200px;image-rendering:pixelated;" /></div><div class="feedHeroLink">${purchaseHero}</div></a></div>`;
+    } else if (purchase[8] == 'weapon') {
+      heroLink = `<div class="feedHeroBox"><a href="/weapon/${purchase[3]}" target="_blank"><div class="feedHeroLink heroSale">Purchased Weapon</div><div id="heroImage" style="height: 200px;" title="click to view equipment history page"><img id="equipmentImage_${purchase[3]}" src="/static/images/equipment-icon.png" style="height: 200px;image-rendering:pixelated;" /></div><div class="feedHeroLink">${purchaseHero}</div></a></div>`;
+      loadEquipment('weapons', purchase[3], 'weaponType', 'weapon');
+    } else if (purchase[8] == 'armor') {
+      heroLink = `<div class="feedHeroBox"><a href="/armor/${purchase[3]}" target="_blank"><div class="feedHeroLink heroSale">Purchased Armor</div><div id="heroImage" style="height: 200px;" title="click to view equipment history page"><img id="equipmentImage_${purchase[3]}" src="/static/images/equipment-icon.png" style="height: 200px;image-rendering:pixelated;" /></div><div class="feedHeroLink">${purchaseHero}</div></a></div>`;
+      loadEquipment('armors', purchase[3], 'armorType', 'armor');
+    } else if (purchase[8] == 'accessory') {
+      heroLink = `<div class="feedHeroBox"><a href="/accessory/${purchase[3]}" target="_blank"><div class="feedHeroLink heroSale">Purchased Accessory</div><div id="heroImage" style="height: 200px;" title="click to view equipment history page"><img id="equipmentImage_${purchase[3]}" src="/static/images/equipment-icon.png" style="height: 200px;image-rendering:pixelated;" /></div><div class="feedHeroLink">${purchaseHero}</div></a></div>`;
+      loadEquipment('accessories', purchase[3], 'equipmentType', 'accessory');
     } else if (purchase[8] == 'assist') {
       heroLink = `<div class="feedHeroBox"><a href="/hero/${purchase[3]}" target="_blank"><div class="feedHeroLink heroSale">Hired Hero</div><div id="heroImage" style="height: 200px;" title="click to view hero history page"><img src="https://hero-generator-mhpyphgqca-uc.a.run.app/image/${purchase[3]}" style="height: 200px;image-rendering:pixelated;" /></div><div class="feedHeroLink">${purchaseHero}</div></a></div>`;
     } else {
