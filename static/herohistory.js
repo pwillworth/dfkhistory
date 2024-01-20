@@ -341,7 +341,10 @@ const PROF_BONUS_DESCRIPTIONS = {
 const EQUIPMENT_RARITY = {
   0: "Common",
   2: "Rare",
-  4: "Mythic"
+  4: "Mythic",
+  10: "Premium Visage",
+  11: "Promotional Visage",
+  12: "Creator Visage"
 }
 const WEAPON_TYPES = {
   0: 'None',

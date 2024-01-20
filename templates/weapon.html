@@ -153,15 +153,19 @@ function displayEquipment(data) {
   pn = document.getElementById('equipmentImage');
   pn.setAttribute('src', `https://defi-kingdoms.b-cdn.net/art-assets/equipment/weapon/${equipmentType}-${displayId}.png`);
   pb = document.getElementById('equipmentBorder');
-  if (data['rarity'] > 2) {
-    rarityBorder = '/static/images/mythic-basic.png';
+  if (data['rarity'] > 9) {
+    rarityBorder = '/static/images/visage-basic.png';
   } else {
-    rarityBorder = '/static/images/rare-basic.png';
+    if (data['rarity'] > 2) {
+      rarityBorder = '/static/images/mythic-basic.png';
+    } else {
+      rarityBorder = '/static/images/rare-basic.png';
+    }
   }
   pb.setAttribute('src', rarityBorder);
 
   var nameElm = document.getElementById('equipmentName');
-  nameElm.innerHTML = WEAPON_TEXT[data['weaponType']][data['displayId']][data['rarity']]['name'];
+  nameElm.innerHTML = WEAPON_TEXT[data['weaponType']][data['displayId']]['name'];
   var typeElm = document.getElementById('weaponType');
   typeElm.innerHTML = `Type: ${WEAPON_TYPES[data['weaponType']]}`;
   var originElm = document.getElementById('equipmentOrigin');
@@ -198,7 +202,7 @@ function displayEquipment(data) {
     }
   }
   var descElm = document.getElementById('equipmentDescription');
-  descElm.innerHTML = WEAPON_TEXT[data['weaponType']][data['displayId']][data['rarity']]['description'];
+  descElm.innerHTML = WEAPON_TEXT[data['weaponType']][data['displayId']]['description'];
 }
 
 function loadLifeEvents() {
