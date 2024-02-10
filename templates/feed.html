@@ -269,10 +269,12 @@ function meditationsRow(med) {
       statData.forEach((statUp) => {
           switch (statUp['updateType']) {
             case 0:
+            case 7:
               primarySummary = `${primarySummary} +${statUp['increase']} ${MEDITATION_HERO_STATS[statUp['stat']]}`;
               totalStatUp += statUp['increase'];
               break;
             case 1:
+            case 8:
               secondarySummary = `${secondarySummary} +${statUp['increase']} ${MEDITATION_HERO_STATS[statUp['stat']]}`;
               totalStatUp += statUp['increase'];
               break;

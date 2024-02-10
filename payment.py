@@ -21,10 +21,10 @@ PAYMENT_TOKENS = {
 }
 TOKEN_SUB_VALUES = {
     '0x19Aac5f612f524B754CA7e7c41cbFa2E981A4432': 0.15, #klay
-    '0xCCb93dABD71c8Dad03Fc4CE5559dC3D89F67a260': 0.20, #dfkJewel
-    '0x30C103f8f5A3A732DFe2dCE1Cc9446f545527b43': 0.20, #klayJewel
+    '0xCCb93dABD71c8Dad03Fc4CE5559dC3D89F67a260': 0.25, #dfkJewel
+    '0x30C103f8f5A3A732DFe2dCE1Cc9446f545527b43': 0.25, #klayJewel
     '0x04b9dA42306B023f3572e106B11D82aAd9D32EBb': 0.02, #crystal
-    '0xB3F5867E277798b50ba7A71C0b24FDcA03045eDF': 0.02, #jabe
+    '0xB3F5867E277798b50ba7A71C0b24FDcA03045eDF': 0.01, #jabe
     '0x3AD9DFE640E1A9Cc1D9B0948620820D975c3803a': 1.00 #dfkUSDC
 }
 
@@ -185,7 +185,7 @@ def validatePayment(network, account, txHash):
     return response
 
 def main():
-    # Initialize database
+    # test
     result = validatePayment('dfkchain', '0x9D4D95FbE9Fb951D8Ef9A1d8dF70105da7F156F2', '0x7b6a17ccf195855849d1d5c66312c73a43531ac51ae6d3fc00ecc922a37d9a87')
     print(result)
 

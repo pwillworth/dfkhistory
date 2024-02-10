@@ -30,7 +30,9 @@ const MEDITATION_STATUP_TYPES = {
   3: 'rarity',
   4: 'health',
   5: 'mana',
-  6: 'stamina'
+  6: 'stamina',
+  7: 'primary attunement',
+  8: 'secondary attunement'
 }
 const EGG_NAMES = {
   0: 'Blue Egg',
