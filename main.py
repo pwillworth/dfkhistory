@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
-from flask import Flask, request, redirect, url_for
+from flask import Flask, request, redirect, url_for, stream_with_context
 from flask import render_template
 from markupsafe import escape
 from web3 import Web3
 import db
+import logging
+from datetime import timezone, datetime, timedelta
 import utils
 import payment
 
@@ -12,6 +14,10 @@ app = Flask(__name__)
 @app.route("/")
 def index():
     return render_template('home.html')
+
+@app.route("/summary")
+def summary():
+    return render_template('summary.html')
 
 @app.route("/hero")
 @app.route("/heroes")
@@ -76,6 +82,59 @@ def accessory_page(accessoryid=None):
         return render_template('accessory.html', equipmentIdLong=accessoryIdLong, equipmentIdShort=accessoryid, activeTab=tabOption)
     else:
         return render_template('accessory.html', equipmentIdLong=23257, equipmentIdShort=23257, activeTab=tabOption)
+
+@app.route("/summary/<period>", methods=['GET','POST'])
+def summary_data(period=None):
+
+    return { "results": db.getSummaryData(period) }
+
+@app.route("/csv/<period>", methods=['GET', 'POST'])
+def csv(period=None):
+    def getEventDataCSV(period):
+        result = ''
+        todayDate = datetime.now()
+        minDate = datetime(todayDate.year, todayDate.month, todayDate.day, tzinfo=timezone.utc) - timedelta(days=1)
+        maxDate = minDate
+        if period == 'ytd':
+            minDate = datetime(todayDate.year, 1, 1, tzinfo=timezone.utc)
+            maxDate = todayDate - timedelta(days=1)
+        elif period == '30d':
+            minDate = todayDate - timedelta(days=31)
+            maxDate = todayDate - timedelta(days=1)
+        elif period == '90d':
+            minDate = todayDate - timedelta(days=91)
+            maxDate = todayDate - timedelta(days=1)
+        elif period == 'all':
+            minDate = datetime(2021, 8, 1, tzinfo=timezone.utc)
+            maxDate = todayDate
+        else:
+            try:
+                minDate = datetime.strptime(period, '%y-%M-%d')
+                maxDate = minDate
+            except Exception as e:
+                # default
+                result = 'defaulted {0}'.format(e)
+        try:
+            con = db.aConn()
+            cur = con.cursor()
+        except Exception as err:
+            logging.error('DB error trying to look up event data. {0}'.format(str(err)))
+        if con != None and not con.closed:
+            cur.execute("SELECT network,TO_CHAR(blockDate, 'YYYY-MM-DD'),heroSalesCount,heroSalesTotal,petSalesCount,petSalesTotal,weaponSalesCount,weaponSalesTotal,accessorySalesCount,accessorySalesTotal,armorSalesCount,armorSalesTotal,heroHireCount,heroHireTotal,tokenPrice,favorHatches,graceHatches,boonHatches,meditationCount,meditationLevels,summonCount,darkSummonCount,accessoryCreated,armorCreated,weaponCreated FROM summary WHERE blockDate BETWEEN %s AND %s", (minDate, maxDate))
+            resultHeader = ['network','blockDate','heroSalesCount','heroSalesTotal','petSalesCount','petSalesTotal','weaponSalesCount','weaponSalesTotal','accessorySalesCount','accessorySalesTotal','armorSalesCount','armorSalesTotal','heroHireCount','heroHireTotal','tokenPrice','favorHatches','graceHatches','boonHatches','meditationCount','meditationLevels','summonCount','darkSummonCount','accessoryCreated','armorCreated','weaponCreated']
+            yield f"{','.join(resultHeader)}\n"
+            rows = cur.fetchmany(10)
+            while len(rows) > 0:
+                for cLine in rows:
+                    yield f"{','.join(str(x) for x in cLine)}\n"
+                rows = cur.fetchmany(10)
+
+            con.close()
+        else:
+            logging.info('Skipping data lookup due to db conn failure.')
+
+    rHeaders = { 'Content-disposition' : 'attachment; filename="dfkhistory.csv"', 'mimetype' : 'text/csv', 'Content-Type' : 'text/csv' }
+    return stream_with_context(getEventDataCSV(period)), rHeaders
 
 @app.route("/hero/<heroid>/history/<hevent>", methods=['GET','POST'])
 def hero_history(heroid=None, hevent=None):

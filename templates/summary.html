@@ -1,0 +1,277 @@
+<html lang="en">
+<head>
+  <title>DFK History - Realm Summary</title>
+  <meta property="og:title" content="DFK History - Realm Summary">
+  <meta property="og:description" content="DFK Kingdoms game event history realm summary page.">
+  <link rel="shortcut icon" href="/static/images/favicon.png" />
+  <meta property="og:image" content="/static/images/favicon.png">
+  <link rel="stylesheet" type="text/css" href="/static/herohistory.css" media="screen" />
+  <script src="/static/herohistory.js" type="text/javascript"></script>
+</head>
+<body>
+<script>
+var dataPeriod='yesterday'
+var countDownDate = new Date();
+countDownDate.setUTCHours(3,30,0,0);
+var now = new Date().getTime();
+if (now > countDownDate) {
+  countDownDate.setDate(countDownDate.getDate() + 1);
+}
+var x = setInterval(function() {
+  var now = new Date().getTime();
+  var distance = countDownDate - now;
+  // Time calculations for days, hours, minutes and seconds
+  var days = Math.floor(distance / (1000 * 60 * 60 * 24));
+  var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+  var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+  // Display the result in the element with id="demo"
+  document.getElementById("updateCountdown").innerHTML = "New Day Data Available in: " + hours + "h "
+  + minutes + "m " + seconds + "s ";
+
+  // If the count down is finished, write some text
+  if (distance < 0) {
+    clearInterval(x);
+    document.getElementById("updateCountdown").innerHTML = "New Data Available";
+  }
+}, 1000);
+window.onload = (event) => {
+  var dh = document.getElementById('heroDataToggle');
+  dh.addEventListener("click", function(event) {
+    var elmId = event.target.id;
+    if (event.target.classList.contains('toggleButton')) {
+      var title = event.target.getAttribute("title");
+      switch (title) {
+        case "Yesterday":
+          loadData();
+          break;
+        case "Year to Date":
+          loadData('ytd');
+          break;
+        case "Last 30 Days":
+          loadData('30d');
+          break;
+        case "Last 90 Days":
+          loadData('90d');
+          break;
+        case "All Time":
+          loadData('all');
+          break;
+        default:
+          //nada
+      }
+    }
+  });
+  loadData();
+};
+function loadData(period='yesterday') {
+  dataPeriod=period;
+  [].forEach.call(document.querySelectorAll('.toggleButton'), function (el) {
+    el.classList.remove('toggleButtonActive')
+  });
+  var headElm = document.getElementById(`${period}Header`);
+  headElm.classList.add('toggleButtonActive');
+  var request = new XMLHttpRequest();
+  request.open('POST', `/summary/${period}`, true);
+  request.onload = function() {
+    if (!request.status || (request.status >= 400)) {
+      alert('Failed to load summary data.');
+    } else {
+      var resp = JSON.parse(request.responseText);
+      if ('error' in resp) {
+        document.getElementById('dataMessage').innerHTML = resp['error'];
+      } else {
+        populateData(resp['results']);
+      }
+    }
+  };
+  request.send();
+}
+function populateData(realmRows) {
+  // Display stats, expecting array of rows per realm
+  var heroSalesInfo = '';
+  var petSalesInfo = '';
+  var accessorySalesInfo = '';
+  var armorSalesInfo = '';
+  var weaponSalesInfo = '';
+  var heroHiresInfo = '';
+  var petHatchesInfo = '';
+  var meditationsInfo = '';
+  var summonsInfo = '';
+  var equipmentCreatedInfo = '';
+  var heroSalesCountAll = 0;
+  var heroSalesTotalAll = 0;
+  var heroSalesUSDAll = 0;
+  var petSalesCountAll = 0;
+  var petSalesTotalAll = 0;
+  var petSalesUSDAll = 0;
+  var weaponSalesCountAll = 0;
+  var weaponSalesTotalAll = 0;
+  var weaponSalesUSDAll = 0;
+  var accessorySalesCountAll = 0;
+  var accessorySalesTotalAll = 0;
+  var accessorySalesUSDAll = 0;
+  var armorSalesCountAll = 0;
+  var armorSalesTotalAll = 0;
+  var armorSalesUSDAll = 0;
+  var heroHireCountAll = 0;
+  var heroHireTotalAll = 0;
+  var heroHireUSDAll = 0;
+  var favorHatchesAll = 0;
+  var graceHatchesAll = 0;
+  var boonHatchesAll = 0;
+  var meditationCountAll = 0;
+  var meditationLevelsAll = 0;
+  var summonCountAll = 0;
+  var darkSummonCountAll = 0;
+  var accessoryCreatedAll = 0;
+  var armorCreatedAll = 0;
+  var weaponCreatedAll = 0;
+
+  realmRows.forEach((realmData) => {
+    var network = realmData[0];
+    var maxDate = realmData[1];
+    heroSalesInfo = `${heroSalesInfo}${network}: ${numFormat.format(Number(realmData[2]))} - ${numFormat.format(Number(realmData[3]).toFixed(0))} - ${usdFormat.format(Number(realmData[4]))} `;
+    heroSalesCountAll = heroSalesCountAll + Number(realmData[2]);
+    heroSalesTotalAll = heroSalesTotalAll + Number(realmData[3]);
+    heroSalesUSDAll = heroSalesUSDAll + Number(realmData[4]);
+    petSalesInfo = `${petSalesInfo}${network}: ${numFormat.format(Number(realmData[5]))} - ${numFormat.format(Number(realmData[6]).toFixed(0))} - ${usdFormat.format(Number(realmData[7]))} `;
+    petSalesCountAll = petSalesCountAll + Number(realmData[5]);
+    petSalesTotalAll = petSalesTotalAll + Number(realmData[6]);
+    petSalesUSDAll = petSalesUSDAll + Number(realmData[7]);
+    weaponSalesInfo = `${weaponSalesInfo}${network}: ${numFormat.format(Number(realmData[8]))} - ${numFormat.format(Number(realmData[9]).toFixed(0))} - ${usdFormat.format(Number(realmData[10]))} `;
+    weaponSalesCountAll = weaponSalesCountAll + Number(realmData[8]);
+    weaponSalesTotalAll = weaponSalesTotalAll + Number(realmData[9]);
+    weaponSalesUSDAll = weaponSalesUSDAll + Number(realmData[10]);
+    accessorySalesInfo = `${accessorySalesInfo}${network}: ${numFormat.format(Number(realmData[11]))} - ${numFormat.format(Number(realmData[12]).toFixed(0))} - ${usdFormat.format(Number(realmData[13]))} `;
+    accessorySalesCountAll = accessorySalesCountAll + Number(realmData[11]);
+    accessorySalesTotalAll = accessorySalesTotalAll + Number(realmData[12]);
+    accessorySalesUSDAll = accessorySalesUSDAll + Number(realmData[13]);
+    armorSalesInfo = `${armorSalesInfo}${network}: ${numFormat.format(Number(realmData[14]))} - ${numFormat.format(Number(realmData[15]).toFixed(0))} - ${usdFormat.format(Number(realmData[16]))} `;
+    armorSalesCountAll = armorSalesCountAll + Number(realmData[14]);
+    armorSalesTotalAll = armorSalesTotalAll + Number(realmData[15]);
+    armorSalesUSDAll = armorSalesUSDAll + Number(realmData[16]);
+    heroHiresInfo = `${heroHiresInfo}${network}: ${numFormat.format(Number(realmData[17]))} - ${numFormat.format(Number(realmData[18]).toFixed(0))} - ${usdFormat.format(Number(realmData[19]))} `;
+    heroHireCountAll = heroHireCountAll + Number(realmData[17]);
+    heroHireTotalAll = heroHireTotalAll + Number(realmData[18]);
+    heroHireUSDAll = heroHireUSDAll + Number(realmData[19]);
+    petHatchesInfo = `${petHatchesInfo}${network}: ${numFormat.format(Number(realmData[20]))}/${numFormat.format(Number(realmData[21]))}/${numFormat.format(Number(realmData[22]))} `;
+    favorHatchesAll = favorHatchesAll + Number(realmData[20]);
+    graceHatchesAll = graceHatchesAll + Number(realmData[21]);
+    boonHatchesAll = boonHatchesAll + Number(realmData[22]);
+    meditationsInfo = `${meditationsInfo}${network}: ${numFormat.format(Number(realmData[23]))} `;
+    meditationCountAll = meditationCountAll + Number(realmData[23]);
+    meditationLevelsAll = meditationLevelsAll + Number(realmData[24]);
+    summonsInfo = `${summonsInfo}${network}: ${numFormat.format(Number(realmData[25]))}/${numFormat.format(Number(realmData[26]))} `;
+    summonCountAll = summonCountAll + Number(realmData[25]);
+    darkSummonCountAll = darkSummonCountAll + Number(realmData[26]);
+    equipmentCreatedInfo = `${equipmentCreatedInfo}${network}: ${realmData[27]}/${realmData[28]}/${realmData[29]} `;
+    accessoryCreatedAll = accessoryCreatedAll + Number(realmData[27]);
+    armorCreatedAll = armorCreatedAll + Number(realmData[28]);
+    weaponCreatedAll = weaponCreatedAll + Number(realmData[29]);
+  });
+  var heroSalesElm = document.getElementById('heroSales');
+  heroSalesElm.innerHTML = `Count: ${numFormat.format(heroSalesCountAll)}<br/>Power Token Amount: ${numFormat.format(heroSalesTotalAll.toFixed(0))}<br/>USD Value: ${usdFormat.format(heroSalesUSDAll)}`;
+  heroSalesElm.setAttribute('data-title', heroSalesInfo);
+  var heroHiresElm = document.getElementById('heroHires');
+  heroHiresElm.innerHTML = `Count: ${numFormat.format(heroHireCountAll)}<br/>Power Token Amount: ${numFormat.format(heroHireTotalAll.toFixed(0))}<br/>USD Value: ${usdFormat.format(heroHireUSDAll)}`;
+  heroHiresElm.setAttribute('data-title', heroHiresInfo);
+  var heroMeditationsElm = document.getElementById('heroMeditations');
+  heroMeditationsElm.innerHTML = `Count: ${numFormat.format(meditationCountAll)}<br/>Average Level ${(meditationLevelsAll/meditationCountAll).toFixed(0)}`;
+  heroMeditationsElm.setAttribute('data-title', meditationsInfo);
+  var heroSummonsElm = document.getElementById('heroSummons');
+  heroSummonsElm.innerHTML = `Normal: ${numFormat.format(summonCountAll)}<br/>Dark: ${numFormat.format(darkSummonCountAll)}`;
+  heroSummonsElm.setAttribute('data-title', summonsInfo);
+  var petSalesElm = document.getElementById('petSales');
+  petSalesElm.innerHTML = `Count: ${numFormat.format(petSalesCountAll)}<br/>Power Token Amount: ${numFormat.format(petSalesTotalAll.toFixed(0))}<br/>USD Value: ${usdFormat.format(petSalesUSDAll)}`;
+  petSalesElm.setAttribute('data-title', petSalesInfo);
+  var petHatchesElm = document.getElementById('petHatches');
+  petHatchesElm.innerHTML = `Favor: ${numFormat.format(favorHatchesAll)}<br/>Grace: ${numFormat.format(graceHatchesAll)}<br/>Boon: ${numFormat.format(boonHatchesAll)}`;
+  petHatchesElm.setAttribute('data-title', petHatchesInfo);
+  var accessorySalesElm = document.getElementById('accessorySales');
+  accessorySalesElm.innerHTML = `Count: ${numFormat.format(accessorySalesCountAll)}<br/>Power Token Amount: ${numFormat.format(accessorySalesTotalAll.toFixed(0))}<br/>USD Value: ${usdFormat.format(accessorySalesUSDAll)}`;
+  accessorySalesElm.setAttribute('data-title', accessorySalesInfo);
+  var armorSalesElm = document.getElementById('armorSales');
+  armorSalesElm.innerHTML = `Count: ${numFormat.format(armorSalesCountAll)}<br/>Power Token Amount: ${numFormat.format(armorSalesTotalAll.toFixed(0))}<br/>USD Value: ${usdFormat.format(armorSalesUSDAll)}`;
+  armorSalesElm.setAttribute('data-title', armorSalesInfo);
+  var weaponSalesElm = document.getElementById('weaponSales');
+  weaponSalesElm.innerHTML = `Count: ${numFormat.format(weaponSalesCountAll)}<br/>Power Token Amount: ${numFormat.format(weaponSalesTotalAll.toFixed(0))}<br/>USD Value: ${usdFormat.format(weaponSalesUSDAll)}`;
+  weaponSalesElm.setAttribute('data-title', weaponSalesInfo);
+  var equipmentCreatedElm = document.getElementById('equipmentCreated');
+  equipmentCreatedElm.innerHTML = `Accessories: ${numFormat.format(accessoryCreatedAll)}<br/>Armor: ${numFormat.format(armorCreatedAll)}<br/>Weapons: ${numFormat.format(weaponCreatedAll)}`;
+  equipmentCreatedElm.setAttribute('data-title', equipmentCreatedInfo);
+}
+function downloadData() {
+  document.getElementById("loadingCSV").style.display = 'block';
+  document.getElementById("downloadData").disabled = true;
+  var url = `/csv/${dataPeriod}`;
+  var htm = '<iframe src="' + url + '" onload="downloadDone()"></iframe>';
+  document.getElementById('frame_box').innerHTML = htm;
+}
+function downloadDone() {
+  document.getElementById("downloadData").disabled = false;
+  document.getElementById("loadingCSV").style.display = 'none';
+}
+</script>
+<a href="/" title="Return to Home"><div id="pageTitle"><div>DFK History</div><img style="position:relative;left:-8px;top:-8px;" src="/static/images/line.png" /></div></a>
+<div id="downloadBlock" style="position: absolute;right: 20px;top: 20px;">
+  <input id="downloadData" type="button" value="Download Source Data" class="largeButton" onclick="downloadData();" />
+  <div id="loadingCSV" style="display:none;">Preparing CSV...<div class="lds-ripple"><div></div><div></div></div></div>
+</div>
+<h1 style="position: absolute;left: 50%;top: 20px;transform: translate(-50%);">DFK History Activity Summary</h1>
+<h4 id="updateCountdown" style="color:yellow;position: absolute;left: 50%;top: 60px;transform: translate(-50%);"></h4>
+<h2 style="width:85%;position: absolute;left: 50%;top: 120px;transform: translate(-50%);">
+  <div id="heroDataToggle" class="headerToggle">
+    <button id="yesterdayHeader" class="toggleButton" style="width: calc(20% - 6px);" title="Yesterday">Yesterday</button>
+    <button id="ytdHeader" class="toggleButton" style="width: calc(20% - 6px);" title="Year to Date">Year to Date</button>
+    <button id="30dHeader" class="toggleButton" style="width: calc(20% - 6px);" title="Last 30 Days">Last 30 Days</button>
+    <button id="90dHeader" class="toggleButton" style="width: calc(20% - 6px);" title="Last 90 Days">Last 90 Days</button>
+    <button id="allHeader" class="toggleButton" style="width: calc(20% - 6px);" title="All Time">All Time</button>
+  </div>
+</h2>
+<div id="playerListsContainer" style="padding-top: 64px;">
+  <div id="col1" class="ib" style="width:32%;vertical-align: top;">
+    <h1 style="line-height:48px;vertical-align: middle;"><img style="width: 48px;" src="/static/images/heroes-icon.png" /> Hero Data</h1>
+    <div id="heroDataGroup" class="summaryGroup">
+      <h3>Sales</h3>
+      <div id="heroSales"></div>
+      <h3>Hires</h3>
+      <div id="heroHires"></div>
+      <h3>Level Ups</h3>
+      <div id="heroMeditations"></div>
+      <h3>Summons</h3>
+      <div id="heroSummons"></div>
+    </div>
+  </div>
+  <div id="col2" class="ib" style="width:32%;vertical-align: top;">
+    <h1 style="line-height:48px;vertical-align: middle;"><img style="width: 48px;" src="/static/images/equipment-icon.png" /> Equipment Data</h1>
+    <div id="equipmentDataGroup" class="summaryGroup">
+      <h3>Accessory Sales</h3>
+      <div id="accessorySales"></div>
+      <h3>Armor Sales</h3>
+      <div id="armorSales"></div>
+      <h3>Weapon Sales</h3>
+      <div id="weaponSales"></div>
+      <h3>Equipment Created</h3>
+      <div id="equipmentCreated"></div>
+    </div>
+  </div>
+  <div id="col3" class="ib" style="width:32%;vertical-align: top;">
+    <h1 style="line-height:48px;vertical-align: middle;"><img style="width: 48px;" src="/static/images/pets-icon.png" /> Pet Data</h1>
+    <div id="petDataGroup" class="summaryGroup">
+      <h3>Sales</h3>
+      <div id="petSales"></div>
+      <h3>Hatches</h3>
+      <div id="petHatches"></div>
+    </div>
+  </div>
+</div>
+<div style="position:fixed;left:0;bottom:240px;margin:16px;"><a href="/player" title="Player History"><img style="width: 64px;" src="/static/images/player.png" /></a></div>
+<div style="position:fixed;left:0;bottom:160px;margin:16px;"><a href="/equipment" title="Equipment Selection"><img style="width: 64px;" src="/static/images/equipment-icon.png" /></a></div>
+<div style="position:fixed;left:0;bottom:80px;margin:16px;"><a href="/pets" title="Return to Pet Selection"><img style="width: 64px;" src="/static/images/pets-icon.png" /></a></div>
+<div style="position:fixed;left:0;bottom:0px;margin:16px;"><a href="/heroes" title="Return to Hero Selection"><img style="width: 64px;" src="/static/images/oldportal.png" /></a></div>
+<div style="position:fixed;right:0;bottom:0px;margin:8px;"><a href="/about" title="FAQ"><img style="width: 64px;opacity: 65%;" src="/static/images/help.png" /></a></div>
+</body>
+<div id="frame_box" style="display:none;"></div>
+</html>

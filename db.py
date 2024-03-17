@@ -6,7 +6,7 @@ import time
 from web3 import Web3
 from hexbytes import HexBytes
 from eth_account.messages import encode_defunct
-from datetime import timezone, datetime
+from datetime import timezone, datetime, timedelta
 import random
 
 
@@ -433,6 +433,38 @@ def getMemberStats():
         results = [results[0], datetime.fromtimestamp(results[1]).isoformat()]
     return results
 
+def getSummaryData(period):
+    result = ''
+    todayDate = datetime.now()
+    minDate = datetime(todayDate.year, todayDate.month, todayDate.day, tzinfo=timezone.utc) - timedelta(days=1)
+    maxDate = minDate
+    if period == 'ytd':
+        minDate = datetime(todayDate.year, 1, 1, tzinfo=timezone.utc)
+        maxDate = todayDate - timedelta(days=1)
+    elif period == '30d':
+        minDate = todayDate - timedelta(days=31)
+        maxDate = todayDate - timedelta(days=1)
+    elif period == '90d':
+        minDate = todayDate - timedelta(days=91)
+        maxDate = todayDate - timedelta(days=1)
+    elif period == 'all':
+        minDate = datetime(2021, 8, 1, tzinfo=timezone.utc)
+        maxDate = todayDate
+    else:
+        try:
+            minDate = datetime.strptime(period, '%y-%M-%d')
+            maxDate = minDate
+        except Exception as e:
+            # default
+            result = 'defaulted {0}'.format(e)
+    con = aConn()
+    with con.cursor() as cur:
+        cur.execute('SELECT network, Max(blockDate), SUM(heroSalesCount), SUM(heroSalesTotal), SUM(heroSalesTotal * tokenPrice) AS heroSalesUSD, SUM(petSalesCount), SUM(petSalesTotal), SUM(petSalesTotal*tokenPrice) AS petSalesUSD, SUM(weaponSalesCount), SUM(weaponSalesTotal), SUM(weaponSalesTotal*tokenPrice) AS weaponSalesUSD, SUM(accessorySalesCount), SUM(accessorySalesTotal), SUM(accessorySalesTotal*tokenPrice) AS accessorySalesUSD, SUM(armorSalesCount), SUM(armorSalesTotal), SUM(armorSalesTotal*tokenPrice) AS armorSalesUSD, SUM(heroHireCount), SUM(heroHireTotal), SUM(heroHireTotal * tokenPrice) AS heroHireUSD, SUM(favorHatches), SUM(graceHatches), SUM(boonHatches), SUM(meditationCount), SUM(meditationLevels), SUM(summonCount), SUM(darkSummonCount), SUM(accessoryCreated), SUM(armorCreated), SUM(weaponCreated) FROM summary WHERE blockDate BETWEEN %s AND %s GROUP BY network', (minDate, maxDate))
+        results = cur.fetchall()
+    con.close()
+
+    return results
+
 def createDatabase():
     con = aConn()
     with con:
@@ -442,6 +474,7 @@ def createDatabase():
             cur.execute('CREATE TABLE IF NOT EXISTS meditations (network VARCHAR(31), txHashStart VARCHAR(127), txHashEnd VARCHAR(127), addressStart VARCHAR(63), addressEnd VARCHAR(63), blockNumberStart INTEGER, blockNumberEnd INTEGER, owner VARCHAR(63), meditationId INTEGER, blockTimestampStart INTEGER, blockTimestampEnd INTEGER, heroId BIGINT, toLevel SMALLINT, bonus SMALLINT, blessing1 SMALLINT, blessing2 SMALLINT, enhancementItem VARCHAR(63), statResults TEXT, PRIMARY KEY (network, meditationId), INDEX IX_meditations_hero (heroId), INDEX IX_meditations_owner (owner))')
             cur.execute('CREATE TABLE IF NOT EXISTS sales (network VARCHAR(31), txHash VARCHAR(127), blockNumber INTEGER, address VARCHAR(63), owner VARCHAR(63), blockTimestamp INTEGER, itemId BIGINT, itemType VARCHAR(15), winner VARCHAR(63), salePrice DOUBLE PRECISION, auctionId BIGINT, PRIMARY KEY (network, txHash), INDEX IX_sales_item (itemType, itemId), INDEX IX_sales_winner (winner), INDEX IX_sales_owner (owner))')
             cur.execute('CREATE TABLE IF NOT EXISTS events (network VARCHAR(31), txHash VARCHAR(127), blockNumber INTEGER, address VARCHAR(63), owner VARCHAR(63), blockTimestamp INTEGER, heroId BIGINT, eventType VARCHAR(31), eventData TEXT, PRIMARY KEY (network, txHash, heroId), INDEX IX_events_hero (heroId), INDEX IX_events_owner (owner))')
+            cur.execute('CREATE TABLE IF NOT EXISTS summary (network VARCHAR(31), blockDate TIMESTAMP, heroSalesCount INTEGER, heroSalesTotal DOUBLE PRECISION, petSalesCount INTEGER, petSalesTotal DOUBLE PRECISION, weaponSalesCount INTEGER, weaponSalesTotal DOUBLE PRECISION, accessorySalesCount INTEGER, accessorySalesTotal DOUBLE PRECISION, armorSalesCount INTEGER, armorSalesTotal DOUBLE PRECISION, heroHireCount INTEGER, heroHireTotal DOUBLE PRECISION, tokenPrice DOUBLE PRECISION, favorHatches INTEGER, graceHatches INTEGER, boonHatches INTEGER, meditationCount INTEGER, meditationLevels BIGINT, summonCount INTEGER, darkSummonCount INTEGER, accessoryCreated INTEGER, armorCreated INTEGER, weaponCreated INTEGER, PRIMARY KEY (network, blockDate))')
             # user mgmt
             cur.execute('CREATE TABLE IF NOT EXISTS members (account VARCHAR(63) PRIMARY KEY, nonce INTEGER, generatedTimestamp INTEGER, expiresTimestamp INTEGER, lastLogin INTEGER)')
             cur.execute('CREATE TABLE IF NOT EXISTS payments (account VARCHAR(63), generatedTimestamp TIMESTAMP NOT NULL, txHash VARCHAR(127), token VARCHAR(63), amount DOUBLE PRECISION, previousExpires INTEGER, newExpires INTEGER, network VARCHAR(31), PRIMARY KEY (network, txHash), INDEX IX_pay_account (account))')

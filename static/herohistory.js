@@ -1,5 +1,10 @@
 var sid='';
 var selectedAccount='';
+var usdFormat = new Intl.NumberFormat('en-US', {
+  style: 'currency',
+  currency: 'USD',
+});
+var numFormat = new Intl.NumberFormat();
 const MEDITATION_HERO_STATS = {
   0: "STR",
   1: "AGI",
