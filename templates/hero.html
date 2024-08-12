@@ -646,7 +646,7 @@ function loadEquips() {
   waitElm.style.display = 'block';
   // lookup hero equipment set history
   var request = new XMLHttpRequest();
-  request.open('POST', `/hero/${heroIdLong}/history/equips`, true);
+  request.open('POST', `/hero/${heroIdLong}/history/equips?order=desc`, true);
   request.onload = function() {
     if (!request.status || (request.status >= 400)) {
       alert('Failed to load equips.');
