@@ -16,7 +16,8 @@ var dataLoaded = {
   'levels': -1,
   'sales': -1,
   'summons': -1,
-  'rentals': -1
+  'rentals': -1,
+  'equips': -1
 };
 const heroIdLong = '{{ heroIdLong }}';
 const heroIdShort = '{{ heroIdShort }}';
@@ -41,6 +42,9 @@ window.onload = (event) => {
           break;
         case "View Rentals":
           switchView('rentals');
+          break;
+        case "View Equips":
+          switchView('equips');
           break;
         default:
           //nada
@@ -78,6 +82,9 @@ function switchView(dataList) {
         break;
       case 'rentals':
         loadRentals();
+        break;
+      case 'equips':
+        loadEquips();
         break;
       default:
         console.log('invalid data type');
@@ -634,6 +641,61 @@ function rentalsTable(data) {
   var waitElm = document.getElementById('medBusyWait');
   waitElm.style.display = 'none';
 }
+function loadEquips() {
+  var waitElm = document.getElementById('medBusyWait');
+  waitElm.style.display = 'block';
+  // lookup hero equipment set history
+  var request = new XMLHttpRequest();
+  request.open('POST', `/hero/${heroIdLong}/history/equips`, true);
+  request.onload = function() {
+    if (!request.status || (request.status >= 400)) {
+      alert('Failed to load equips.');
+    } else {
+      var resp = JSON.parse(request.responseText);
+      if ('error' in resp) {
+        document.getElementById('equipList').innerHTML = resp['error'];
+      } else {
+        dataLoaded['equips'] = resp['results'].length;
+        equipsTable(resp);
+      }
+    }
+  };
+  request.send();
+}
+function equipsTable(data) {
+  var listElm = document.getElementById('equipsList');
+  var newRow = document.createElement('tr');
+  listElm.innerHTML = '';
+  newRow.innerHTML = '<th>Owner</th><th>Block Date</th><th>Realm</th><th>Equipped Slots</th><th>Equipment Set</th>';
+  listElm.appendChild(newRow);
+  if (data['results'].length > 0) {
+    data['results'].forEach((equip) => {
+      var newRow = document.createElement('tr');
+      var addr = equip[3].substring(0, 6) + '...' + equip[3].substring(38, 42);
+      var lDate = dateConverter(equip[4]);
+      var equippedSlots = equip[5];
+      var equipmentSet = '';
+      // TODO pass equipment set ids through a function called from clicking row to display equipment on hero display
+      var equipmentSetIds = '{'
+      for (i=6;i<=18;i++) {
+        equipmentSetIds = `${equipmentSetIds}"${EQUIP_INDEX_BASE_TYPES[i]}": ${equip[i]},`;
+        if (equip[i] > 0) {
+          equipmentSet += `<img src='/static/images/${EQUIP_INDEX_ICONS[i]}' /><a href='/${EQUIP_INDEX_BASE_TYPES[i]}/${equip[i]}'>${equip[i]}</a> `;
+        }
+      }
+      equipmentSetIds = `${equipmentSetIds}}`;
+      newRow.innerHTML = `<td title="${equip[3]}" onclick="copyTitle(event);whoDis('${equip[3]}', event);" style="cursor: pointer;">${addr}</td><td>${lDate}</td><td>${equip[0]}</td><td>${equippedSlots}</td><td>${equipmentSet}</td>`;
+      listElm.appendChild(newRow);
+    });
+  } else {
+    var newRow = document.createElement('tr');
+    newRow.innerHTML = '<td colspan=4>None Found</td>';
+    listElm.appendChild(newRow);
+  }
+  var waitElm = document.getElementById('medBusyWait');
+  waitElm.style.display = 'none';
+}
+
 function addBadge(badge) {
   contElm = document.getElementById('heroBadges');
   badgeElm = document.createElement('img');
@@ -663,24 +725,44 @@ function addBadge(badge) {
   <div style="background-image: url(/static/images/board_frame_right.png);position: absolute;top:48;left:900;width:12px;height:518px;background-repeat: repeat;"></div>
   <img src="/static/images/board_frame_bottom_right.png" style="position: absolute;top:564;left:864;" />
   <div style="background-image: url(/static/images/board_frame_bottom.png);position: absolute;top:600;left:48;width:816px;height:12px;background-repeat: repeat;"></div>
+  <div id="equipmentSet" style="display: none;">
+    <div id="equippedWeapon1" class="equipBox" style="position: absolute;top:108px;left:128px;"><img style="width:90px" src="/static/images/inactive-weapon.png"/></div>
+    <div id="equippedWeapon1border" class="equipBoxBorder" style="position: absolute;top:100px;left:120px;"><img src="/static/images/default-1.png"/></div>
+    <div id="equippedWeapon2" class="equipBox" style="position: absolute;top:228px;left:128px;"><img style="width:90px" src="/static/images/inactive-weapon.png"/></div>
+    <div id="equippedWeapon2border" class="equipBoxBorder" style="position: absolute;top:220px;left:120px;"><img src="/static/images/default-2.png"/></div>
+    <div id="equippedArmor" class="equipBox" style="position: absolute;top:348px;left:132px;"><img style="width:80px" src="/static/images/inactive-armor.png"/></div>
+    <div id="equippedArmorborder" class="equipBoxBorder" style="position: absolute;top:340px;left:124px;"><img src="/static/images/default-basic.png"/></div>
+    <div id="equippedOffhand1" class="equipBox" style="position: absolute;top:108px;left:628px;"><img style="width:90px" src="/static/images/inactive-offhand.png"/></div>
+    <div id="equippedOffhand1border" class="equipBoxBorder" style="position: absolute;top:100px;left:620px;"><img src="/static/images/default-1.png"/></div>
+    <div id="equippedOffhand2" class="equipBox" style="position: absolute;top:228px;left:628px;"><img style="width:90px" src="/static/images/inactive-offhand.png"/></div>
+    <div id="equippedOffhand2border" class="equipBoxBorder" style="position: absolute;top:220px;left:620px;"><img src="/static/images/default-2.png"/></div>
+    <div id="equippedAccessory" class="equipBox" style="position: absolute;top:348px;left:632px;"><img style="width:80px" src="/static/images/inactive-accessory.png"/></div>
+    <div id="equippedAccessoryborder" class="equipBoxBorder" style="position: absolute;top:340px;left:624px;"><img src="/static/images/default-basic.png"/></div>
+    <div id="equippedPet" class="equipBox" style="position: absolute;top:452px;left:624px;"><img src="/static/images/inactive-pet.png"/></div>
+    <div id="petBackground" style="position:absolute;top:452;left:624;height:90px;width:90px;"><div id="petBgAnimation"></div></div>
+    <div id="petForeground" style="position:absolute;top:452;left:624;height:90px;width:90px;"><div id="petFgAnimation"></div></div>
+    <div id="petImage" style="position:absolute;top:462;left:634;height:90px;"><div id="petAnimation"></div></div>
+  </div>
 </div>
 
 <div id="dataContainer" class="infoContainer">
   <div id="heroDataToggle" class="headerToggle">
     <button id="eventsHeader" class="toggleButton" title="View Life Events">Events</button>
     <button id="levelsHeader" class="toggleButton" title="View Level Ups">Levels</button>
-    <button id="salesHeader" class="toggleButton" title="View Sales">Sales</button>
     <button id="summonsHeader" class="toggleButton" title="View Summons">Summons</button>
+    <button id="salesHeader" class="toggleButton" title="View Sales">Sales</button>
     <button id="rentalsHeader" class="toggleButton" title="View Rentals">Rentals</button>
+    <button id="equipsHeader" class="toggleButton" title="View Equips">Equips</button>
   </div>
   <div id="heroData" style="margin: 12px;">
     <img style="width: 100%" src="/static/images/parchment-top.png" />
     <div class="scrollBack">
       <table id="eventsList" class="heroTable"><tr><th></th><th>owner</th><th>Block Date</th><th>Event</th></tr></table>
       <table id="levelsList" class="heroTable"><tr><th>Enh.</th><th>owner</th><th>Block Date</th><th>To Level</th><th>Bonus Choices</th><th>Stat Ups</th></tr></table>
-      <table id="salesList" class="heroTable"><tr><th>Seller</th><th>Block Date</th><th>Winner</th><th>Sale Price</th></tr></table>
       <table id="summonsList" class="heroTable"><tr><th>Enh.</th><th>owner</th><th>Block Time</th><th>New Hero</th><th>Summoner</th><th>Assistant</th></tr></table>
+      <table id="salesList" class="heroTable"><tr><th>Seller</th><th>Block Date</th><th>Winner</th><th>Sale Price</th></tr></table>
       <table id="rentalsList" class="heroTable"><tr><th>Renter</th><th>Block Date</th><th>Hirer</th><th>Rental Price</th></tr></table>
+      <table id="equipsList" class="heroTable"><tr><th>Owner</th><th>Block Date</th><th>Equipped Slots</th><th>Equipment Set</th></tr></table>
       <div id="medBusyWait"><div id="animate1"><div id="animate1Img"><img src="/static/images/swamp-front.gif" /></div></div></div>
     </div>
     <img style="width: 100%" src="/static/images/parchment-bottom.png" />

@@ -155,10 +155,21 @@ function displayEquipment(data) {
   var requirementElm = document.getElementById('requirement');
   requirementElm.innerHTML = `Requires Level ${data['equipRequirement']}`;
 
+  // accessories might be normal or offhands
+  bonusDescriptions = ACCESSORY_BONUS_DESCRIPTIONS;
+  if (data['equipmentType'] > 1) {
+    bonusDescriptions = OFFHAND_BONUS_DESCRIPTIONS;
+  }
   for (let i=1; i<6; i++) {
     if (data[`bonus${i}`] > 0) {
       var bonusesElm = document.getElementById(`scalarBonusContainer${i}`);
-      bonusesElm.innerHTML = ACCESSORY_BONUS_DESCRIPTIONS[data[`bonus${i}`]].replace('{0}', data[`bonusScalar${i}`]/10);
+      if ([231,234].includes(data[`bonus${i}`])) {
+        scalar1 = data[`bonusScalar${i}`] & 255;
+        scalar2 = data[`bonusScalar${i}`] >> 8;
+        bonusesElm.innerHTML = bonusDescriptions[data[`bonus${i}`]].replace('{0}', scalar1).replace('{1}', scalar2);
+      } else {
+        bonusesElm.innerHTML = bonusDescriptions[data[`bonus${i}`]].replace('{0}', data[`bonusScalar${i}`]/10);
+      }
     }
   }
   for (let y=1; y<4; y++) {
@@ -327,6 +338,7 @@ function salesTable(data) {
         <div id="scalarBonusContainer3"></div>
         <div id="scalarBonusContainer4"></div>
         <div id="scalarBonusContainer4"></div>
+        <div id="scalarBonusContainer5"></div>
     </div>
     <div id="equipmentEnchantments" style="padding-bottom: 12px;margin-bottom: 12px;border-bottom: 1px solid tan;">
         <div id="scalarEnchantmentContainer1"></div>

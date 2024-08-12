@@ -82,121 +82,6 @@ function loadPet() {
   };
   request.send();
 }
-function displayPet(data) {
-  var petdata = data['data']
-  var bgElm = document.getElementById('petBgAnimation');
-  var fgElm = document.getElementById('petFgAnimation');
-  switch (petdata['background']) {
-    case 'Adelyn Side Street':
-      bgFrames = 0;
-      fgFrames = 0;
-      bgElm.style.backgroundImage = `url(/static/images/pet-backgrounds/townbg.png)`;
-      fgElm.style.backgroundImage = 'url(/static/images/pet-backgrounds/townfg.png)';
-      break;
-    case 'Reyalin Mountain Pass':
-      bgFrames = 0;
-      fgFrames = 7;
-      bgElm.style.backgroundImage = `url(/static/images/pet-backgrounds/cliffbg.png)`;
-      fgElm.style.backgroundImage = 'url(/static/images/pet-backgrounds/clifffg.png)';
-      break;
-    case 'Haywood Farmstead':
-      bgFrames = 0;
-      fgFrames = 12;
-      bgElm.style.backgroundImage = `url(/static/images/pet-backgrounds/farmbg.png)`;
-      fgElm.style.backgroundImage = 'url(/static/images/pet-backgrounds/farmfg.png)';
-      break;
-    case 'Forest Trail':
-      bgFrames = 5;
-      fgFrames = 7;
-      bgElm.style.backgroundImage = `url(/static/images/pet-backgrounds/forestbg.png)`;
-      fgElm.style.backgroundImage = 'url(/static/images/pet-backgrounds/forestfg.png)';
-      break;
-    case 'Inner Grove':
-      bgFrames = 0;
-      fgFrames = 13;
-      bgElm.style.backgroundImage = `url(/static/images/pet-backgrounds/grovebg.png)`;
-      fgElm.style.backgroundImage = 'url(/static/images/pet-backgrounds/grovefg.png)';
-      break;
-    case 'Vithraven Outskirts':
-      bgFrames = 0;
-      fgFrames = 0;
-      bgElm.style.backgroundImage = `url(/static/images/pet-backgrounds/icebg.png)`;
-      fgElm.style.backgroundImage = 'url(/static/images/pet-backgrounds/icefg.png)';
-      break;
-    case 'Path of Fire':
-      bgFrames = 4;
-      fgFrames = 4;
-      bgElm.style.backgroundImage = `url(/static/images/pet-backgrounds/lavabg.png)`;
-      fgElm.style.backgroundImage = 'url(/static/images/pet-backgrounds/lavafg.png)';
-      break;
-    case 'Vuhlmira Ruins':
-      bgFrames = 10;
-      fgFrames = 8;
-      bgElm.style.backgroundImage = `url(/static/images/pet-backgrounds/skycastlebg.png)`;
-      fgElm.style.backgroundImage = 'url(/static/images/pet-backgrounds/skycastlefg.png)';
-      break;
-    case 'Swamp of Eoxis':
-      bgFrames = 0;
-      fgFrames = 0;
-      bgElm.style.backgroundImage = `url(/static/images/pet-backgrounds/swampbg.png)`;
-      fgElm.style.backgroundImage = 'url(/static/images/pet-backgrounds/swampfg.png)';
-      break;
-    case 'Bloater Falls':
-      bgFrames = 4;
-      fgFrames = 0;
-      bgElm.style.backgroundImage = `url(/static/images/pet-backgrounds/waterfallbg.png)`;
-      fgElm.style.backgroundImage = 'url(/static/images/pet-backgrounds/waterfallfg.png)';
-      break;
-    default:
-      bgFrames = 0;
-      fgFrames = 0;
-      bgElm.style.backgroundImage = `url(/static/images/pet-backgrounds/plainsbg.png)`;
-      fgElm.style.backgroundImage = 'url(/static/images/pet-backgrounds/plainsfg.png)';
-  }
-  if (bgFrames > 0) {
-    bgElm.style.animation = `playpetbg${bgFrames} 3.5s steps(${bgFrames}) infinite`;
-  }
-  if (fgFrames > 0) {
-    fgElm.style.animation = `playpetbg${fgFrames} 3.5s steps(${fgFrames}) infinite`;
-  }
-  var petElm = document.getElementById('petAnimation');
-  petElm.style.backgroundImage = `url(${petdata['animation']})`;
-  var nameElm = document.getElementById('petName');
-  nameElm.innerHTML = data['name'];
-  var genElm = document.getElementById('petGen');
-  genElm.innerHTML = `Pool: ${petdata['pool']}`;
-  var elementElm = document.getElementById('petElement');
-  elementElm.src = `/static/images/pet-${petdata['element'].toLowerCase()}.png`;
-  var rarityElm = document.getElementById('petRarity');
-  rarityElm.src = `/static/images/rarity-pet-${petdata['rarity'].toLowerCase()}.png`;
-  if (petdata['rarity'] == 'Mythic') {
-    var contElm = document.getElementById('petContainer');
-    var mythicScreen = document.createElement('div');
-    mythicScreen.style.position = 'absolute';
-    mythicScreen.style.width = '360px';
-    mythicScreen.style.height = '360px';
-    mythicScreen.classList = 'mythic';
-    contElm.appendChild(mythicScreen);
-  }
-  addBonus(`gathering-${petdata['gatheringbonustype'].toLowerCase()}.png`, petdata['gatheringbonusrarity']);
-  if (petdata['craftingbonus'] != 'None') {
-    addBonus(`crafting-${petdata['craftingbonustype'].toLowerCase()}.png`, petdata['craftingbonusrarity']);
-  }
-  if (petdata['combatbonus'] != 'None') {
-    addBonus('combat.png', petdata['combatbonusrarity']);
-  }
-  var jobsElm = document.getElementById('petJobs');
-  scalarRange = PROF_BONUS_MAX_SCALAR[petdata['gatheringbonustype']][petdata['gatheringbonusrarity']][petdata['gatheringbonus']] - PROF_BONUS_MIN_SCALAR[petdata['gatheringbonustype']][petdata['gatheringbonusrarity']][petdata['gatheringbonus']];
-  scalarPercentOfRange = (petdata['gatheringbonusscalar'] - PROF_BONUS_MIN_SCALAR[petdata['gatheringbonustype']][petdata['gatheringbonusrarity']][petdata['gatheringbonus']]) / scalarRange * 100;
-  jobsElm.innerHTML = petdata['gatheringbonus'];
-  jobsElm.setAttribute('data-title', (PROF_BONUS_DESCRIPTIONS[petdata['gatheringbonustype']][petdata['gatheringbonus']]).replace('{0}', petdata['gatheringbonusscalar']));
-  var valueElm = document.getElementById('scalarValueBar');
-  valueElm.style.width = `${scalarPercentOfRange}%`;
-  valueElm.innerHTML = petdata['gatheringbonusscalar'];
-  scElm = document.getElementById('scalarContainer');
-  scElm.setAttribute('data-title', `Bonus value ${petdata['gatheringbonusscalar']} in range ${PROF_BONUS_MIN_SCALAR[petdata['gatheringbonustype']][petdata['gatheringbonusrarity']][petdata['gatheringbonus']]} to ${PROF_BONUS_MAX_SCALAR[petdata['gatheringbonustype']][petdata['gatheringbonusrarity']][petdata['gatheringbonus']]}`);
-}
-
 function loadLifeEvents() {
   var waitElm = document.getElementById('medBusyWait');
   waitElm.style.display = 'block';
@@ -365,9 +250,10 @@ function addBonus(badge, rarity) {
   <div id="petGen" class="tshadow" style="font-size:16px;font-weight:bold;position: absolute;top:540;left:270;"></div>
   <div id="petBonuses" style="position:absolute;top:100;left:20;width:100px;"></div>
   <div id="petBadges" style="position:absolute;top:90;left:790;width:80px;"></div>
+  <a href="https://www.adfk.app/pets/{{ petIdLong }}" target="_blank"><img src="/static/images/adfk.png" style="opacity: 60%;position: absolute;left:40;top:540;"/></a>
   <div id="petBackground" style="position:absolute;top:280;left:300;height:360px;width:360px;"><div id="petBgAnimation"></div></div>
   <div id="petForeground" style="position:absolute;top:280;left:300;height:360px;width:360px;"><div id="petFgAnimation"></div></div>
-  <a href="https://www.adfk.app/pets/{{ petIdLong }}" target="_blank"><div id="petImage" style="position:absolute;top:340;left:310;height:360px;" title="click to view pet on ADFK"><div id="petAnimation"><img src="/static/images/adfk.png" style="float:left;opacity: 60%;padding-top:200px;"/></div></div></a>
+  <div id="petImage" style="position:absolute;top:340;left:310;height:360px;" title="click to view pet on ADFK"><div id="petAnimation"></div></div>
   <div id="petContainer" style="position:absolute;top:112px;left:132px;height:360px;width:360px;"></div>
   <div class="tshadow" style="position:absolute;top:130;left:580;font-size:24px;font-weight: bold;"><span id="petJobs"></span></div>
   <div id="scalarContainer" class="rangeBar" style="position:absolute;top:160;left:580;font-size:18px;"><div id="scalarValueBar"></div></div>

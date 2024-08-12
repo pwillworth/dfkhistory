@@ -141,12 +141,12 @@ h3 {
     border-radius: 5px;
     color: #f9f3ea;
     font-family: Lora,Georgia,serif;
-    font-size: 24px;
+    font-size: 20px;
     font-weight: 700;
     letter-spacing: 1.1666666667px;
     padding: 5px 25px;
     text-shadow: 3.5px 0 0 #491306, 3.23365px 1.33945px 0 #491306, 2.47485px 2.47485px 0 #491306, 1.33945px 3.23365px 0 #491306, 0 3.5px 0 #491306, -1.33945px 3.23365px 0 #491306, -2.47485px 2.47485px 0 #491306, -3.23365px 1.33945px 0 #491306, -3.5px 0 0 #491306, -3.23365px -1.33945px 0 #491306, -2.47485px -2.47485px 0 #491306, -1.33945px -3.23365px 0 #491306, 0 -3.5px 0 #491306, 1.33945px -3.23365px 0 #491306, 2.47485px -2.47485px 0 #491306, 3.23365px -1.33945px 0 #491306;
-    width: calc(20% - 4px);
+    width: calc(16%);
     cursor: pointer;
 }
 .toggleButtonActive {

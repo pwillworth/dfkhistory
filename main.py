@@ -83,6 +83,18 @@ def accessory_page(accessoryid=None):
     else:
         return render_template('accessory.html', equipmentIdLong=23257, equipmentIdShort=23257, activeTab=tabOption)
 
+@app.route("/armor/<armorid>")
+def armor_page(armorid=None):
+    armorIdLong = utils.translateHeroId(escape(armorid))
+    tabOption = escape(request.args.get('tab', 'events'))
+    if tabOption not in ['events','sales']:
+        tabOption = 'events'
+
+    if type(armorIdLong) is int or armorIdLong.isnumeric():
+        return render_template('armor.html', equipmentIdLong=armorIdLong, equipmentIdShort=armorid, activeTab=tabOption)
+    else:
+        return render_template('armor.html', equipmentIdLong=23257, equipmentIdShort=23257, activeTab=tabOption)
+
 @app.route("/summary/<period>", methods=['GET','POST'])
 def summary_data(period=None):
 
@@ -158,6 +170,8 @@ def hero_history(heroid=None, hevent=None):
         return { "results": db.getSummons(heroid, orderOption) }
     elif hevent == 'rentals':
         return { "results": db.getRentals(heroid, orderOption) }
+    elif hevent == 'equips':
+        return { "results": db.getEquips(heroid, orderOption) }
     else:
         app.logger.warn('Invalid event type for history call: {0}'.format(hevent))
         return { "results": [], "error": "Invalid event type" }
@@ -215,6 +229,25 @@ def accessory_history(accessoryid=None, hevent=None):
         return { "results": db.getEquipmentLifeEvents(accessoryid, 'accessory', orderOption) }
     elif hevent == 'sales':
         return { "results": db.getEquipmentSales(accessoryid, 'accessory', orderOption) }
+    else:
+        app.logger.warn('Invalid event type for history call: {0}'.format(hevent))
+        return { "results": [], "error": "Invalid event type" }
+
+@app.route("/armor/<armorid>/history/<hevent>", methods=['GET','POST'])
+def armor_history(armorid=None, hevent=None):
+    armorid = utils.translateHeroId(escape(armorid))
+    if type(armorid) is not int and not armorid.isnumeric():
+        app.logger.warn('Invalid armor id for history call: {0}'.format(hevent))
+        return { "results": [], "error": "Invalid armor id" }
+
+    hevent = escape(hevent)
+
+    orderOption = escape(request.args.get('order', ''))
+
+    if hevent == 'life':
+        return { "results": db.getEquipmentLifeEvents(armorid, 'armor', orderOption) }
+    elif hevent == 'sales':
+        return { "results": db.getEquipmentSales(armorid, 'armor', orderOption) }
     else:
         app.logger.warn('Invalid event type for history call: {0}'.format(hevent))
         return { "results": [], "error": "Invalid event type" }

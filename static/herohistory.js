@@ -392,9 +392,16 @@ const WEAPON_BONUS_DESCRIPTIONS = {
   20: "Increase Block chance by +{0}%",
   21: "Increase Spell Block chance by +{0}%",
   22: "Increase Critical Hit damage multiplier by +{0}",
-  23: "Increase Critical Hit chance by +{0}%"
+  23: "Increase Critical Hit chance by +{0}%",
+  24: "Critical Hits gain {0}% Lifesteal",
+  25: "Gain {0}% Pierce",
+  26: "Increase Block damage reduction by {0}%",
+  27: "Increase Spell Block damage reduction by {0}%",
+  28: "Increase Magical Damage dealt and reduce Healing Potency by {0}% each",
+  29: "Increase Healing Potency and reduce Magical Damage dealt by {0}% each",
+  30: "Decrease Physical and Magical Defense by {0}% each"
 }
-ACCESSORY_TYPES = {
+const ACCESSORY_TYPES = {
   0: 'None',
   1: 'Accessory',
   2: 'Shield',
@@ -432,7 +439,112 @@ const ACCESSORY_BONUS_DESCRIPTIONS = {
   29: "Decrease Physical Accuracy by -{0}%",
   30: "Decrease Magical Accuracy by -{0}%",
   31: "Increase Physical Damage by +{0}%",
-  32: "Increase Magical Damage by +{0}%"
+  32: "Increase Magical Damage by +{0}%",
+  33: "Gain +{0}% Riposte",
+  230: "Add +{0} to Duel Score when Dueling",
+  231: "Gain a roll for +{0}-{1} added to Duel Score when Dueling",
+  232: "Gain +{0}% chance for matching background to appear when defending Duel champion",
+  233: "Add +{0} to Duel Score when defending Duel champion",
+  234: "Gain a roll for +{0}-{1} added to Duel Score when defending Duel champion"
+}
+const OFFHAND_BONUS_DESCRIPTIONS = {
+  1: "Increase Block chance by +{0}%",
+  2: "Increase Block damage reduction by +{0}%",
+  3: "Increase Spell Block chance by +{0}%",
+  4: "Increase Spell Block damage reduction by +{0}%",
+  5: "Gain +{0}% Riposte"
+}
+const ARMOR_TYPES = {
+  0: 'None',
+  1: 'Light',
+  2: 'Medium',
+  3: 'Heavy'
+}
+const ARMOR_BONUS_DESCRIPTIONS = {
+  1: "Increase Block chance by +{0}%",
+  2: "Increase Spell Block chance by +{0}%",
+  3: "Increase Block damage reduction by {0}%",
+  4: "Increase Spell Block damage reduction by {0}%",
+  5: "Increase Physical Accuracy by +{0}%",
+  6: "Increase Magical Accuracy by +{0}%",
+  7: "Increase Speed by {0}%",
+  8: "Increase Evasion by {0}%",
+  9: "Increase Status Effect Resistance by +{0}%",
+  10: "Increase Banish Resistance by +{0}%",
+  11: "Increase Bleed Resistance by +{0}%",
+  12: "Increase Blind Resistance by +{0}%",
+  13: "Increase Burn Resistance by +{0}%",
+  14: "Increase Chill Resistance by +{0}%",
+  15: "Increase Confuse Resistance by +{0}%",
+  16: "Increase Daze Resistance by +{0}%",
+  17: "Increase Disarm Resistance by +{0}%",
+  18: "Increase Fear Resistance by +{0}%",
+  19: "Increase Intimidate Resistance by +{0}%",
+  20: "Increase Poison Resistance by +{0}%",
+  21: "Increase Pull Resistance by +{0}%",
+  22: "Increase Push Resistance by +{0}%",
+  23: "Increase Silence Resistance by +{0}%",
+  24: "Increase Sleep Resistance by +{0}%",
+  25: "Increase Slow Resistance by +{0}%",
+  26: "Increase Stun Resistance by +{0}%",
+  27: "Increase Taunt Resistance by +{0}%",
+  28: "Increase Critical Hit Multiplier by +{0}",
+  29: "Increase Physical Defense by +{0}%",
+  30: "Increase Magical Defense by +{0}%",
+  31: "Decrease Physical Accuracy by -{0}%",
+  32: "Decrease Magical Accuracy by -{0}%",
+  33: "Increase Physical Damage by +{0}%",
+  34: "Increase Magical Damage by +{0}%",
+  35: "Gain +{0}% Riposte",
+  36: "Double the bonuses above this bonus when equipped with {0} accessory.",
+  37: "Double the bonuses above this bonus when equipped with {0} off-hand.",
+  38: "Double the bonuses above this bonus when equipped with {0} 1H Sword.",
+  39: "Gain {0}% chance to Retaliate 1 upon receiving physical damage.",
+  40: "Gain {0} Initiative after each successful Block",
+  41: "Increase Recovery chance by +{0}%",
+  42: "Double the bonuses above this bonus when equipped with {0} 2H Sword.",
+  43: "Double the bonuses above this bonus when equipped with {0} 1H Axe.",
+  44: "Double the bonuses above this bonus when equipped with {0} 2H Axe.",
+  45: "Double the bonuses above this bonus when equipped with {0} 1H Mace.",
+  46: "Double the bonuses above this bonus when equipped with {0} 2H Mace.",
+  47: "Double the bonuses above this bonus when equipped with {0} 1H Spear.",
+  48: "Double the bonuses above this bonus when equipped with {0} 2H Spear.",
+  49: "Double the bonuses above this bonus when equipped with {0} Wand.",
+  50: "Double the bonuses above this bonus when equipped with {0} Staff.",
+  51: "Double the bonuses above this bonus when equipped with {0} Gloves.",
+  52: "Double the bonuses above this bonus when equipped with {0} Bow.",
+  53: "Double the bonuses above this bonus when equipped with {0} Dagger.",
+  54: "Decrease Speed by {0}%"
+};
+const EQUIP_INDEX_ICONS = {
+  6: 'pet-active.png',
+  7: 'weapon_1hsword.png',
+  8: 'weapon_1hsword.png',
+  9: 'weapon_1hswordy.png',
+  10: 'weapon_1hswordy.png',
+  11: 'offhand_shield.png',
+  12: 'offhand_shield.png',
+  13: 'offhand_shieldy.png',
+  14: 'offhand_shieldy.png',
+  15: 'armor_light.png',
+  16: 'armor_lighty.png',
+  17: 'accessory.png',
+  18: 'accessoryy.png'
+}
+const EQUIP_INDEX_BASE_TYPES = {
+  6: 'pet',
+  7: 'weapon',
+  8: 'weapon',
+  9: 'weapon',
+  10: 'weapon',
+  11: 'accessory',
+  12: 'accessory',
+  13: 'accessory',
+  14: 'accessory',
+  15: 'armor',
+  16: 'armor',
+  17: 'accessory',
+  18: 'accessory'
 }
 
 function timeConverter(UNIX_timestamp){
@@ -516,6 +628,121 @@ function loadPet(petId) {
   };
   request.send();
 }
+function displayPet(data) {
+  var petdata = data['data']
+  var bgElm = document.getElementById('petBgAnimation');
+  var fgElm = document.getElementById('petFgAnimation');
+  switch (petdata['background']) {
+    case 'Adelyn Side Street':
+      bgFrames = 0;
+      fgFrames = 0;
+      bgElm.style.backgroundImage = `url(/static/images/pet-backgrounds/townbg.png)`;
+      fgElm.style.backgroundImage = 'url(/static/images/pet-backgrounds/townfg.png)';
+      break;
+    case 'Reyalin Mountain Pass':
+      bgFrames = 0;
+      fgFrames = 7;
+      bgElm.style.backgroundImage = `url(/static/images/pet-backgrounds/cliffbg.png)`;
+      fgElm.style.backgroundImage = 'url(/static/images/pet-backgrounds/clifffg.png)';
+      break;
+    case 'Haywood Farmstead':
+      bgFrames = 0;
+      fgFrames = 12;
+      bgElm.style.backgroundImage = `url(/static/images/pet-backgrounds/farmbg.png)`;
+      fgElm.style.backgroundImage = 'url(/static/images/pet-backgrounds/farmfg.png)';
+      break;
+    case 'Forest Trail':
+      bgFrames = 5;
+      fgFrames = 7;
+      bgElm.style.backgroundImage = `url(/static/images/pet-backgrounds/forestbg.png)`;
+      fgElm.style.backgroundImage = 'url(/static/images/pet-backgrounds/forestfg.png)';
+      break;
+    case 'Inner Grove':
+      bgFrames = 0;
+      fgFrames = 13;
+      bgElm.style.backgroundImage = `url(/static/images/pet-backgrounds/grovebg.png)`;
+      fgElm.style.backgroundImage = 'url(/static/images/pet-backgrounds/grovefg.png)';
+      break;
+    case 'Vithraven Outskirts':
+      bgFrames = 0;
+      fgFrames = 0;
+      bgElm.style.backgroundImage = `url(/static/images/pet-backgrounds/icebg.png)`;
+      fgElm.style.backgroundImage = 'url(/static/images/pet-backgrounds/icefg.png)';
+      break;
+    case 'Path of Fire':
+      bgFrames = 4;
+      fgFrames = 4;
+      bgElm.style.backgroundImage = `url(/static/images/pet-backgrounds/lavabg.png)`;
+      fgElm.style.backgroundImage = 'url(/static/images/pet-backgrounds/lavafg.png)';
+      break;
+    case 'Vuhlmira Ruins':
+      bgFrames = 10;
+      fgFrames = 8;
+      bgElm.style.backgroundImage = `url(/static/images/pet-backgrounds/skycastlebg.png)`;
+      fgElm.style.backgroundImage = 'url(/static/images/pet-backgrounds/skycastlefg.png)';
+      break;
+    case 'Swamp of Eoxis':
+      bgFrames = 0;
+      fgFrames = 0;
+      bgElm.style.backgroundImage = `url(/static/images/pet-backgrounds/swampbg.png)`;
+      fgElm.style.backgroundImage = 'url(/static/images/pet-backgrounds/swampfg.png)';
+      break;
+    case 'Bloater Falls':
+      bgFrames = 4;
+      fgFrames = 0;
+      bgElm.style.backgroundImage = `url(/static/images/pet-backgrounds/waterfallbg.png)`;
+      fgElm.style.backgroundImage = 'url(/static/images/pet-backgrounds/waterfallfg.png)';
+      break;
+    default:
+      bgFrames = 0;
+      fgFrames = 0;
+      bgElm.style.backgroundImage = `url(/static/images/pet-backgrounds/plainsbg.png)`;
+      fgElm.style.backgroundImage = 'url(/static/images/pet-backgrounds/plainsfg.png)';
+  }
+  if (bgFrames > 0) {
+    bgElm.style.animation = `playpetbg${bgFrames} 3.5s steps(${bgFrames}) infinite`;
+  }
+  if (fgFrames > 0) {
+    fgElm.style.animation = `playpetbg${fgFrames} 3.5s steps(${fgFrames}) infinite`;
+  }
+  var petElm = document.getElementById('petAnimation');
+  petElm.style.backgroundImage = `url(${petdata['animation']})`;
+  var nameElm = document.getElementById('petName');
+  nameElm.innerHTML = data['name'];
+  var genElm = document.getElementById('petGen');
+  genElm.innerHTML = `Pool: ${petdata['pool']}`;
+  var elementElm = document.getElementById('petElement');
+  elementElm.src = `/static/images/pet-${petdata['element'].toLowerCase()}.png`;
+  var rarityElm = document.getElementById('petRarity');
+  rarityElm.src = `/static/images/rarity-pet-${petdata['rarity'].toLowerCase()}.png`;
+  if (petdata['rarity'] == 'Mythic') {
+    var contElm = document.getElementById('petContainer');
+    var mythicScreen = document.createElement('div');
+    mythicScreen.style.position = 'absolute';
+    mythicScreen.style.width = '360px';
+    mythicScreen.style.height = '360px';
+    mythicScreen.classList = 'mythic';
+    contElm.appendChild(mythicScreen);
+  }
+  addBonus(`gathering-${petdata['gatheringbonustype'].toLowerCase()}.png`, petdata['gatheringbonusrarity']);
+  if (petdata['craftingbonus'] != 'None') {
+    addBonus(`crafting-${petdata['craftingbonustype'].toLowerCase()}.png`, petdata['craftingbonusrarity']);
+  }
+  if (petdata['combatbonus'] != 'None') {
+    addBonus('combat.png', petdata['combatbonusrarity']);
+  }
+  var jobsElm = document.getElementById('petJobs');
+  scalarRange = PROF_BONUS_MAX_SCALAR[petdata['gatheringbonustype']][petdata['gatheringbonusrarity']][petdata['gatheringbonus']] - PROF_BONUS_MIN_SCALAR[petdata['gatheringbonustype']][petdata['gatheringbonusrarity']][petdata['gatheringbonus']];
+  scalarPercentOfRange = (petdata['gatheringbonusscalar'] - PROF_BONUS_MIN_SCALAR[petdata['gatheringbonustype']][petdata['gatheringbonusrarity']][petdata['gatheringbonus']]) / scalarRange * 100;
+  jobsElm.innerHTML = petdata['gatheringbonus'];
+  jobsElm.setAttribute('data-title', (PROF_BONUS_DESCRIPTIONS[petdata['gatheringbonustype']][petdata['gatheringbonus']]).replace('{0}', petdata['gatheringbonusscalar']));
+  var valueElm = document.getElementById('scalarValueBar');
+  valueElm.style.width = `${scalarPercentOfRange}%`;
+  valueElm.innerHTML = petdata['gatheringbonusscalar'];
+  scElm = document.getElementById('scalarContainer');
+  scElm.setAttribute('data-title', `Bonus value ${petdata['gatheringbonusscalar']} in range ${PROF_BONUS_MIN_SCALAR[petdata['gatheringbonustype']][petdata['gatheringbonusrarity']][petdata['gatheringbonus']]} to ${PROF_BONUS_MAX_SCALAR[petdata['gatheringbonustype']][petdata['gatheringbonusrarity']][petdata['gatheringbonus']]}`);
+}
+
 function loadEquipment(equipmentCategory, itemId, typeProperty, equipmentPath) {
   // look for equipment details
   query = `query {

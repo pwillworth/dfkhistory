@@ -237,6 +237,19 @@ def getSummons(heroId, order):
             result = cur.fetchall()
     return result
 
+def getEquips(heroId, order):
+    result = []
+    if order == 'desc':
+        orderStr = 'ORDER BY blockTimestamp DESC'
+    else:
+        orderStr = 'ORDER BY blockTimestamp'
+    con = aConn()
+    with con:
+        with con.cursor() as cur:
+            cur.execute('SELECT network, txHash, blockNumber, owner, blockTimestamp, equippedSlots, petId, weapon1Id, weapon1VisageId, weapon2Id, weapon2VisageId, offhand1Id, offhand1VisageId, offhand2Id, offhand2VisageId, armorId, armorVisageId, accessoryId, accessoryVisageId from equips WHERE heroId=%s {0}'.format(orderStr), (heroId,))
+            result = cur.fetchall()
+    return result
+
 def getPetLifeEvents(petId, order):
     result = []
     if order == 'desc':
@@ -474,6 +487,7 @@ def createDatabase():
             cur.execute('CREATE TABLE IF NOT EXISTS meditations (network VARCHAR(31), txHashStart VARCHAR(127), txHashEnd VARCHAR(127), addressStart VARCHAR(63), addressEnd VARCHAR(63), blockNumberStart INTEGER, blockNumberEnd INTEGER, owner VARCHAR(63), meditationId INTEGER, blockTimestampStart INTEGER, blockTimestampEnd INTEGER, heroId BIGINT, toLevel SMALLINT, bonus SMALLINT, blessing1 SMALLINT, blessing2 SMALLINT, enhancementItem VARCHAR(63), statResults TEXT, PRIMARY KEY (network, meditationId), INDEX IX_meditations_hero (heroId), INDEX IX_meditations_owner (owner))')
             cur.execute('CREATE TABLE IF NOT EXISTS sales (network VARCHAR(31), txHash VARCHAR(127), blockNumber INTEGER, address VARCHAR(63), owner VARCHAR(63), blockTimestamp INTEGER, itemId BIGINT, itemType VARCHAR(15), winner VARCHAR(63), salePrice DOUBLE PRECISION, auctionId BIGINT, PRIMARY KEY (network, txHash), INDEX IX_sales_item (itemType, itemId), INDEX IX_sales_winner (winner), INDEX IX_sales_owner (owner))')
             cur.execute('CREATE TABLE IF NOT EXISTS events (network VARCHAR(31), txHash VARCHAR(127), blockNumber INTEGER, address VARCHAR(63), owner VARCHAR(63), blockTimestamp INTEGER, heroId BIGINT, eventType VARCHAR(31), eventData TEXT, PRIMARY KEY (network, txHash, heroId), INDEX IX_events_hero (heroId), INDEX IX_events_owner (owner))')
+            cur.execute('CREATE TABLE IF NOT EXISTS equips (network VARCHAR(31), txHash VARCHAR(127), blockNumber INTEGER, address VARCHAR(63), owner VARCHAR(63), blockTimestamp INTEGER, heroId BIGINT, equippedSlots BIGINT, petId BIGINT, weapon1Id BIGINT, weapon1VisageId BIGINT, weapon2Id BIGINT, weapon2VisageId BIGINT, offhand1Id BIGINT, offhand1VisageId BIGINT, offhand2Id BIGINT, offhand2VisageId BIGINT, armorId BIGINT, armorVisageId BIGINT, accessoryId BIGINT, accessoryVisageId BIGINT, PRIMARY KEY (heroId, network, txHash), INDEX IX_equips_owner (owner))')
             cur.execute('CREATE TABLE IF NOT EXISTS summary (network VARCHAR(31), blockDate TIMESTAMP, heroSalesCount INTEGER, heroSalesTotal DOUBLE PRECISION, petSalesCount INTEGER, petSalesTotal DOUBLE PRECISION, weaponSalesCount INTEGER, weaponSalesTotal DOUBLE PRECISION, accessorySalesCount INTEGER, accessorySalesTotal DOUBLE PRECISION, armorSalesCount INTEGER, armorSalesTotal DOUBLE PRECISION, heroHireCount INTEGER, heroHireTotal DOUBLE PRECISION, tokenPrice DOUBLE PRECISION, favorHatches INTEGER, graceHatches INTEGER, boonHatches INTEGER, meditationCount INTEGER, meditationLevels BIGINT, summonCount INTEGER, darkSummonCount INTEGER, accessoryCreated INTEGER, armorCreated INTEGER, weaponCreated INTEGER, PRIMARY KEY (network, blockDate))')
             # user mgmt
             cur.execute('CREATE TABLE IF NOT EXISTS members (account VARCHAR(63) PRIMARY KEY, nonce INTEGER, generatedTimestamp INTEGER, expiresTimestamp INTEGER, lastLogin INTEGER)')
