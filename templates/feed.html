@@ -702,7 +702,11 @@ function purchasesRow(purchase) {
     } else if (purchase[3] > 1000000000000) {
       purchaseHero = 'CV-' + (purchase[3] - 1000000000000);
     }
-    var owner = purchase[7].substring(0, 6) + '...' + purchase[7].substring(38, 42);
+    if (purchase[7] != null) {
+      var owner = purchase[7].substring(0, 6) + '...' + purchase[7].substring(38, 42);
+    } else {
+      var owner = 'null';
+    }
     var winner = purchase[5].substring(0, 6) + '...' + purchase[5].substring(38, 42);
     var lDate = timeConverter(purchase[4]);
     switch (purchase[0]) {
