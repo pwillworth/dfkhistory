@@ -308,8 +308,11 @@ function salesTable(data) {
           case 'klaytn':
               token = 'jade';
               break;
+          case 'metis':
+              token = 'jewel';
+              break;
           default:
-              tokens = {}
+              token = '';
       }
       var salePrice = sale[6];
       newRow.innerHTML = `<td title="${sale[3]}" onclick="copyTitle(event);whoDis('${sale[3]}', event);" style="cursor: pointer;">${addr}</td><td>${lDate}</td><td title="${sale[5]}" onclick="copyTitle(event);whoDis('${sale[5]}', event);" style="cursor: pointer;">${winner}</td><td><img style="max-width:16px;" src="/static/images/${token}-perspective.png" />${salePrice.toFixed(1)}</td>`;
