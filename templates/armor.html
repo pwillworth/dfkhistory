@@ -145,14 +145,16 @@ function displayEquipment(data) {
   pn = document.getElementById('equipmentImage');
   pn.setAttribute('src', `https://defi-kingdoms.b-cdn.net/art-assets/equipment/armor/${armorType}-${displayId}.png`);
   pb = document.getElementById('equipmentBorder');
-  if (data['rarity'] > 9) {
-    rarityBorder = '/static/images/visage-basic.png';
-  } else {
-    if (data['rarity'] > 2) {
+  switch(data['rarity']) {
+    case 10,11,12:
+      rarityBorder = '/static/images/visage-basic.png';
+      break;
+    case 4:
       rarityBorder = '/static/images/mythic-basic.png';
-    } else {
+    case 2:
       rarityBorder = '/static/images/rare-basic.png';
-    }
+    default:
+      rarityBorder = '/static/images/common-basic.png';
   }
   pb.setAttribute('src', rarityBorder);
 
