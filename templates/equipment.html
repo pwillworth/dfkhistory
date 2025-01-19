@@ -46,13 +46,16 @@ function goEquipment() {
     case "CRY":
         realmPrefix = "CV-";
         break;
+    case "SUN":
+        realmPrefix = "SI-";
+        break;
     default:
         realmPrefix = "";
   }
   if ( Number.isInteger(equipmentId) ) {
     return 1;
   }
-  if ( equipmentId > 1000000000000 ) {
+  if ( equipmentId > 500000000000 ) {
     document.location = `/${eType}/${equipmentId}`;
   } else {
     document.location = `/${eType}/${realmPrefix}${equipmentId}`;
@@ -69,6 +72,8 @@ function goEquipment() {
     <label for="CRY"><img src="/static/images/crystal-card-icon.png" style="width: 32px;" title="Crystalvale Equipment" /></label>
     <input type="radio" name="realmOption" id="SER2" value="SER2">
     <label for="SER2"><img src="/static/images/jade-card-icon.png" style="width: 32px;" title="Serendale Equipment" /></label>
+    <input type="radio" name="realmOption" id="SUN" value="SUN">
+    <label for="SUN"><img src="/static/images/submersian-shell.png" style="width: 32px;" title="Sundered Isles Equipment" /></label>
     </fieldset>
     <input type="text" id="equipmentId" name="equipmentId" size="10" placeholder="#" />
     <fieldset class="multiToggle tshadow" style="margin-top: 16px;">

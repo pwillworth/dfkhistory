@@ -4,9 +4,9 @@ EQUIPMENT_SOURCE = {
     "9000000000002": "Tiltproof Tuesday", // Community Promo
     "9000000000003": "Karate Combat Promo", //Direct Offer
     "9000000000004": "visage offer 4",
-    "9000000000005": "visage offer 5",
-    "9000000000006": "visage offer 6",
-    "9000000000007": "visage offer 7",
+    "9000000000005": "Doug Hype Promo",
+    "9000000000006": "Big Red Promo",
+    "9000000000007": "Hercules Promo",
     "9000000000008": "Metis Promo",
     "9000000010000": "Kingdom Builder Promo", // Kingdom Builders
     "9000000020000": "Void Hunt - Mad Boar", // Hunts
@@ -37,6 +37,7 @@ EQUIPMENT_SOURCE = {
     "9000000040003": "Void Hunt Veteran Reward",
     "9000000000008": "Hammertown",
     "9000000001000": "Vithraven Blacksmith",
+    "9000000050001": "Submersia Patrol", // Patrols
 }
 EQUIPMENT_DYE1_COLORS = {
     1: "#847d7d",
@@ -79,6 +80,10 @@ WEAPON_TEXT = {
     4: {
       "name": "Squire's Halbard",
       "description": "A favorite for castle-guards, the giant halberd doubles as a combat deterrant."
+    },
+    50000: {
+      "name": "Miner's Pickaxe",
+      "description": "You can pick your friends. You can pick your foes. And with this sturdy weapon, you can even pickaxe your friend's foes!"
     }
   },
   3: {
@@ -147,6 +152,10 @@ WEAPON_TEXT = {
     3: {
       "name": "Squire's Mace",
       "description": "A hard iron mace designed to concuss beasts and men alike."
+    },
+    4: {
+      "name": "Claw Cudgel",
+      "description": "The repurposed claw of a lumbering crusted crab. It smells... buttery?"
     }
   },
   8: {
@@ -237,6 +246,10 @@ WEAPON_TEXT = {
     4: {
       "name": "Squire's Greatsword",
       "description": "A well-crafted iron claymore. The handle is long enough to hold in both hands."
+    },
+    5: {
+      "name": "Living Blade",
+      "description": "A massive blade purloined from the remains of a now very dead suit of armor."
     }
   },
   13: {
@@ -332,6 +345,14 @@ ACCESSORY_TEXT = {
       "name": "Mister Birthday",
       "description": "An austere cake that exudes confidence and longevity. A strange force seems to invite you to place it atop your head."
     },
+    19: {
+      "name": "Swearing Hat",
+      "description": "On cold, moonless nights, this hat whispers curses in a long-forgotten tongue."
+    },
+    20: {
+      "name": "Drunkard's Bandana",
+      "description": "This old red rag smells like a brothel and fits like a glove... on your head... like a hat."
+    },
     50000: {
       "name": "Bloater Mask",
       "description": "This iconic fish mask exudes an air of sophistication and mystique. No bloaters were harmed in the making of this item."
@@ -391,6 +412,10 @@ ACCESSORY_TEXT = {
     50016: {
       "name": "Crown of Wisdom",
       "description": "A laurel leaf crown of immense power that imbues wisdom and light."
+    },
+    50017: {
+      "name": "Mannish Cap",
+      "description": "Instead of letting a manshroom get inside your head, wear its head on your head! Be the fungi you've always dreamt of being."
     }
   },
   2: {
@@ -501,6 +526,18 @@ ARMOR_TEXT = {
     50019: {
       "name": "Metisian Toga",
       "description": "This lightweight toga fashioned by the gods transforms its wearer into an agile and extremely comfortable warrior."
+    },
+    50020: {
+      "name": "Hercules Muscle Suit",
+      "description": "Get the body you want without all the effort! This snug rubber muscle suit shows that you're not afraid of a little exercise, even if that exercise happens to be squeezing into a tight rubber muscle suit."
+    },
+    50021: {
+      "name": "Miner's Overalls",
+      "description": "Don't even think about hiding these chic mining overalls underground! Show the surface world you mean business with a style they'll dig."
+    },
+    50022: {
+      "name": "Fungal Frock",
+      "description": "Skip the damp and the dark with this stylish frock modeled after the bright plumage of the infamous manshroom."
     }
   },
   2: {
@@ -537,6 +574,10 @@ ARMOR_TEXT = {
     4: {
       "name": "Squire's Heavy Armor",
       "description": "Imposing iron armor to protect you on the battlefield."
+    },
+    5: {
+      "name": "Armor of the Drowned",
+      "description": "A rusty heap of platemail with the left arm missing. It serves as a poignant reminder of the unforgiving perils of the sea."
     }
   }
 };

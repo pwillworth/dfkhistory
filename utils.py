@@ -8,6 +8,8 @@ def translateHeroId(heroIdString):
             realmAdd = 1000000000000
         elif parts[0] == 'SD':
             realmAdd = 2000000000000
+        elif parts[0] == 'SI':
+            realmAdd = 500000000000
         else:
             realmAdd = 0
         if parts[1].isnumeric():
