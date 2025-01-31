@@ -104,7 +104,7 @@ def summary_data(period=None):
 def csv(period=None):
     def getEventDataCSV(period):
         result = ''
-        todayDate = datetime.now(tzinfo=timezone.utc)
+        todayDate = datetime.now(tz=timezone.utc)
         todayDate = todayDate - timedelta(hours=2)
         minDate = datetime(todayDate.year, todayDate.month, todayDate.day, tzinfo=timezone.utc) - timedelta(days=1)
         maxDate = minDate
