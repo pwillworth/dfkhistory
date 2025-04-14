@@ -463,7 +463,11 @@ const OFFHAND_BONUS_DESCRIPTIONS = {
   2: "Increase Block damage reduction by +{0}%",
   3: "Increase Spell Block chance by +{0}%",
   4: "Increase Spell Block damage reduction by +{0}%",
-  5: "Gain +{0}% Riposte"
+  5: "Gain +{0}% Riposte",
+  6: "Increase P.DEF by X",
+  7: "Increase M.DEF by X",
+  8: "Increase Pull Resistance by +X%",
+  9: "Increase Push Resistance by +X%"
 }
 const ARMOR_TYPES = {
   0: 'None',
