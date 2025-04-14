@@ -81,6 +81,10 @@ WEAPON_TEXT = {
       "name": "Squire's Halbard",
       "description": "A favorite for castle-guards, the giant halberd doubles as a combat deterrant."
     },
+    5: {
+      "name": "Leviathan's Rage",
+      "description": "A massive coral cleaver that hums with ancient fury."
+    },
     50000: {
       "name": "Miner's Pickaxe",
       "description": "You can pick your friends. You can pick your foes. And with this sturdy weapon, you can even pickaxe your friend's foes!"
@@ -106,6 +110,10 @@ WEAPON_TEXT = {
     5: {
       "name": "Gore Longbow",
       "description": "A crude recurve longbow fashioned from the bones of a mighty boar."
+    },
+    6: {
+      "name": "Farstriker",
+      "description": "A gilded composite bow crafted from Submersian Coral."
     }
   },
   4: {
@@ -120,6 +128,10 @@ WEAPON_TEXT = {
     3: {
       "name": "Squire's Dagger",
       "description": "A handy iron dagger designed sturdy for parrying and stabbing."
+    },
+    4: {
+      "name": "Ripfang",
+      "description": "A razor-sharp Submersian Coral dagger with an edge that never dulls."
     },
     50000: {
       "name": "Gardening Trowel",
@@ -156,6 +168,10 @@ WEAPON_TEXT = {
     4: {
       "name": "Claw Cudgel",
       "description": "The repurposed claw of a lumbering crusted crab. It smells... buttery?"
+    },
+    5: {
+      "name": "Deepmaul",
+      "description": "A wicked mace barbed with razor-sharp Submersian Coral."
     }
   },
   8: {
@@ -203,6 +219,14 @@ WEAPON_TEXT = {
       "name": "Squire's Staff",
       "description": "A sturdy staff with metal embellishments and topped with an amethyst focus."
     },
+    5: {
+      "name": "Corrupted Staff",
+      "description": "A gnarled branch wrapped in the luminescent tentacle of some corrupted eldritch horror."
+    },
+    6: {
+      "name": "Sirensong",
+      "description": "A staff with a massive lustrous pearl mounted in Submersian Coral."
+    },
     50000: {
       "name": "Walking Stick",
       "description": "A sturdy and perfectly balanced oak walking stick. An essential accessory for lengthy foraging trips or fighting off territorial basilisks."
@@ -224,6 +248,10 @@ WEAPON_TEXT = {
     4: {
       "name": "Squire's Sword",
       "description": "A plain looking iron longsword with a crossguard."
+    },
+    5: {
+      "name": "Coralbrand",
+      "description": "An ornate one-handed blade made from fine Submersian Coral."
     },
     50000: {
       "name": "Fishing Rod",
@@ -250,6 +278,10 @@ WEAPON_TEXT = {
     5: {
       "name": "Living Blade",
       "description": "A massive blade purloined from the remains of a now very dead suit of armor."
+    },
+    6: {
+      "name": "Tidecleaver",
+      "description": "A colossal blade made from venomous Submersian Coral."
     }
   },
   13: {
@@ -268,6 +300,10 @@ WEAPON_TEXT = {
     4: {
       "name": "Squire's Wand",
       "description": "An amethyst topped wand. It looks sturdy."
+    },
+    5: {
+      "name": "Hydra's Gaze",
+      "description": "A pearl-topped wand made from Submersian Coral."
     }
   }
 };
@@ -353,6 +389,18 @@ ACCESSORY_TEXT = {
       "name": "Drunkard's Bandana",
       "description": "This old red rag smells like a brothel and fits like a glove... on your head... like a hat."
     },
+    21: {
+      "name": "Octohood",
+      "description": "The limp and mangled corpse of an octopilot who, even in death, is still along for the ride."
+    },
+    22: {
+      "name": "Cowl of Eternal Hunger",
+      "description": "Wearing this hood makes you feel hollow and... desperately hungry."
+    },
+    23: {
+      "name": "Crown of Submersia",
+      "description": "Only legendary champions of the Colosseum receive the coveted Crown of Submersia, an intricate coral crown reflecting the pioneering spirit of Submersians past and present."
+    },
     50000: {
       "name": "Bloater Mask",
       "description": "This iconic fish mask exudes an air of sophistication and mystique. No bloaters were harmed in the making of this item."
@@ -376,6 +424,14 @@ ACCESSORY_TEXT = {
     50005: {
       "name": "Super Blub Defender: Yellow Mask",
       "description": "A mask made by the Super Blub Defender (SBD) Fan Club. This one represents the Yellow Defender, who is known for her lucky dodges, uncanny lunges, and otherwordly Bloater cakes."
+    },
+    50006: {
+      "name": "Super Blub Defender: Black Mask",
+      "description": "A mask made by the Super Blub Defender (SBD) Fan Club. This one represents the Black Defender, who is known for his firm handshake, next-level stealth, and unprompted backflips."
+    },
+    50007: {
+      "name": "Super Blub Defender: Green Mask",
+      "description": "A mask made by the Super Blub Defender (SBD) Fan Club. This one represents the Green Defender, who is known for his boastfulness, gambling acumen, and violently unfunny dad jokes."
     },
     50008: {
       "name": "Yellow Panther Mask",
@@ -434,6 +490,10 @@ ACCESSORY_TEXT = {
     4: {
       "name": "Squire's Shield",
       "description": "A simple heater shield made of iron. Blocks everything but criticism."
+    },
+    5: {
+      "name": "Reefwall",
+      "description": "A sturdy yet light shield made from interlocking coral and supported by a gold-plated frame."
     }
   }
 };
@@ -454,6 +514,14 @@ ARMOR_TEXT = {
     4: {
       "name": "Squire's Light Armor",
       "description": "Layered comfortable garments that are great for adventures or a night on the town."
+    },
+    5: {
+      "name": "Rags of the Nameless",
+      "description": "A pile of discolored and frayed wrappings worn by the acolytes of the Nameless God."
+    },
+    6: {
+      "name": "Abyssal Tunic",
+      "description": "A light tunic interwoven with Submersian Coral."
     },
     50000: {
       "name": "Bloater Suit",
@@ -478,6 +546,14 @@ ARMOR_TEXT = {
     50005: {
       "name": "Super Blub Defender: Yellow Suit",
       "description": "A suit made by the Super Blub Defender (SBD) Fan Club. This one represents the Yellow Defender, who is known for her lucky dodges, uncanny lunges, and otherwordly Bloater cakes."
+    },
+    50006: {
+      "name": "Super Blub Defender: Black Suit",
+      "description": "A suit made by the Super Blub Defender (SBD) Fan Club. This one represents the Black Defender, who is known for his firm handshake, next-level stealth, and unprompted backflips."
+    },
+    50007: {
+      "name": "Super Blub Defender: Green Suit",
+      "description": "A suit made by the Super Blub Defender (SBD) Fan Club. This one represents the Green Defender, who is known for his boastfulness, gambling acumen, and violently unfunny dad jokes."
     },
     50008: {
       "name": "Yellow Panther Suit",
@@ -556,6 +632,10 @@ ARMOR_TEXT = {
     4: {
       "name": "Squire's Medium Armor",
       "description": "Studded leather armor that protects your body without slowing you down."
+    },
+    5: {
+      "name": "Seawarden's Mail",
+      "description": "A gilded leather vest adorned with protective Submersian Coral."
     }
   },
   3: {
@@ -578,6 +658,10 @@ ARMOR_TEXT = {
     5: {
       "name": "Armor of the Drowned",
       "description": "A rusty heap of platemail with the left arm missing. It serves as a poignant reminder of the unforgiving perils of the sea."
+    },
+    6: {
+      "name": "Coral Brigandine",
+      "description": "A golden breastplate covered in several layers of durable Submersian Coral."
     }
   }
 };

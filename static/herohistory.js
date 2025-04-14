@@ -399,7 +399,18 @@ const WEAPON_BONUS_DESCRIPTIONS = {
   27: "Increase Spell Block damage reduction by {0}%",
   28: "Increase Magical Damage dealt and reduce Healing Potency by {0}% each",
   29: "Increase Healing Potency and reduce Magical Damage dealt by {0}% each",
-  30: "Decrease Physical and Magical Defense by {0}% each"
+  30: "Decrease Physical and Magical Defense by {0}% each",
+  31: "Decrease Healing Potency by X%",
+  32: "Increase Magical Damage by X%",
+  33: "Increase Physical Damage by X%",
+  34: "Gain X% chance to Retaliate 1 upon receiving damage.",
+  35: "Gain X% chance to Retaliate 1 upon receiving physical damage.",
+  36: "Gain X% chance to Retaliate 1 upon receiving magical damage.",
+  37: "Critical Hits gain X% chance to inflict Bleed",
+  38: "Critical Hits gain X% chance to inflict Poison",
+  39: "Critical Hits gain X% chance to inflict Daze",
+  40: "Critical Heals gain X% chance to Cleanse",
+  41: "Increase Critical Heal chance by +X%"
 }
 const ACCESSORY_TYPES = {
   0: 'None',
@@ -514,7 +525,11 @@ const ARMOR_BONUS_DESCRIPTIONS = {
   51: "Double the bonuses above this bonus when equipped with {0} Gloves.",
   52: "Double the bonuses above this bonus when equipped with {0} Bow.",
   53: "Double the bonuses above this bonus when equipped with {0} Dagger.",
-  54: "Decrease Speed by {0}%"
+  54: "Decrease Speed by {0}%",
+  55:	"Decrease Healing Potency by X%",
+  56:	"Critical Hits gain X% Lifesteal",
+  57:	"Increase Critical Hit chance by +X%",
+  58: "Reduce Channeling times by X%"
 };
 const EQUIP_INDEX_ICONS = {
   6: 'pet-active.png',
