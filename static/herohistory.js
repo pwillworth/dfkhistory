@@ -452,6 +452,9 @@ const ACCESSORY_BONUS_DESCRIPTIONS = {
   31: "Increase Physical Damage by +{0}%",
   32: "Increase Magical Damage by +{0}%",
   33: "Gain +{0}% Riposte",
+  34:	"Increase ATTACK by +{0}%",
+  35:	"Increase SPELL by +{0}%",
+  36: "Gain Ability: {0}",
   230: "Add +{0} to Duel Score when Dueling",
   231: "Gain a roll for +{0}-{1} added to Duel Score when Dueling",
   232: "Gain +{0}% chance for matching background to appear when defending Duel champion",
@@ -464,10 +467,10 @@ const OFFHAND_BONUS_DESCRIPTIONS = {
   3: "Increase Spell Block chance by +{0}%",
   4: "Increase Spell Block damage reduction by +{0}%",
   5: "Gain +{0}% Riposte",
-  6: "Increase P.DEF by X",
-  7: "Increase M.DEF by X",
-  8: "Increase Pull Resistance by +X%",
-  9: "Increase Push Resistance by +X%"
+  6: "Increase P.DEF by {0}",
+  7: "Increase M.DEF by {0}",
+  8: "Increase Pull Resistance by +{0}%",
+  9: "Increase Push Resistance by +{0}%"
 }
 const ARMOR_TYPES = {
   0: 'None',
@@ -530,10 +533,10 @@ const ARMOR_BONUS_DESCRIPTIONS = {
   52: "Double the bonuses above this bonus when equipped with {0} Bow.",
   53: "Double the bonuses above this bonus when equipped with {0} Dagger.",
   54: "Decrease Speed by {0}%",
-  55:	"Decrease Healing Potency by X%",
-  56:	"Critical Hits gain X% Lifesteal",
-  57:	"Increase Critical Hit chance by +X%",
-  58: "Reduce Channeling times by X%"
+  55:	"Decrease Healing Potency by {0}%",
+  56:	"Critical Hits gain {0}% Lifesteal",
+  57:	"Increase Critical Hit chance by +{0}%",
+  58: "Reduce Channeling times by {0}%"
 };
 const EQUIP_INDEX_ICONS = {
   6: 'pet-active.png',
