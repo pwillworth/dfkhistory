@@ -130,6 +130,13 @@ function lifeEventsTable(data) {
         eventImage = '<img style="max-width: 24px;" src="/static/images/rip-badge.png" title="Pet released" />';
         eventName = 'Pet released into the wild';
         addBadge('rip-badge.png');
+      } else if (lev[5] == 'PetTranscended') {
+        eventImage = '<img style="max-width: 24px;" src="/static/images/rip-badge.png" title="Transcended at Divine Altar" />';
+        itemType = 'pet';
+        eventData = JSON.parse(lev[6]);
+        eventName = `Transcended with Hero <a href="/hero/${eventData[1]}" target="_blank">${eventData[1]}</a>`;
+        eventDetails = `Multiplier ${eventData[0]/10}`;
+        addBadge('rip-badge.png');
       }
       newRow.innerHTML = `<td>${eventImage}</td><td title="${lev[3]}" onclick="copyTitle(event);whoDis('${lev[3]}', event);" style="cursor: pointer;">${addr}</td><td>${lDate}</td><td title="${eventDetails}" onclick="copyTitle(event);" style="cursor: pointer;">${eventName}</td>`;
     });

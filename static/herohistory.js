@@ -28,6 +28,17 @@ const EQUIPMENT_HERO_STATS = {
   7: 'WIS',
   8: 'LCK'
 }
+const CRYSTAL_STONE_NAMES = {
+  0: "might",
+  1: "finesse",
+  2: "swiftness",
+  3: "vigor",
+  4: "fortitude",
+  5: "wit",
+  6: "insight",
+  7: "fortune",
+  8: "chaos",
+}
 const MEDITATION_STATUP_TYPES = {
   0: 'primary',
   1: 'secondary',

@@ -439,6 +439,20 @@ function lifeEventsTable(data) {
         eventImage = '<img style="max-width: 24px;" src="/static/images/rip-badge.png" title="Perished in Dark Summoning Pit" />';
         eventName = 'Perished in Dark Summon Pit';
         addBadge('rip-badge.png');
+      } else if (lev[5] == 'HeroTranscended') {
+        eventImage = '<img style="max-width: 24px;" src="/static/images/rip-badge.png" title="Transcended at Divine Altar" />';
+        eventData = JSON.parse(lev[6]);
+        eventName = `Hero Transcended - Multiplier: ${eventData['multiplier']/10} - Rewards: <img style="max-width: 16px;" src="/static/images/items/divine-essence.gif" title="Divine Essence" />${numFormat.format(eventData['amountDE']/1000000000000000000)} <img style="max-width: 16px;" src="/static/images/items/greater-divine-essence.gif" title="Greated Divine Essence" />${numFormat.format(eventData['amountGDE']/1000000000000000000)}`;
+        for (let x=0;x<9;x++) {
+          if (eventData['crystals'][x] > 0) {
+            crystalName = CRYSTAL_STONE_NAMES[x];
+            eventName += ` ${eventData['crystals'][x]}<img style="max-width: 16px;" src="/static/images/items/${crystalName}-crystal-lesser.gif" title="Lesser ${crystalName} crystals" />`;
+          }
+        };
+        if (eventData['amountVS'] > 0) {
+          eventName += ` ${eventData['amountVS']}<img style="max-width: 16px;" src="/static/images/items/void.gif" title="void shards" />`;
+        }
+        addBadge('rip-badge.png');
       }
       newRow.innerHTML = `<td>${eventImage}</td><td title="${lev[3]}" onclick="copyTitle(event);whoDis('${lev[3]}', event);" style="cursor: pointer;">${addr}</td><td>${lDate}</td><td title="${eventDetails}" onclick="copyTitle(event);" style="cursor: pointer;">${eventName}</td>`;
     });

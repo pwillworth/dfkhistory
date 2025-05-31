@@ -184,7 +184,7 @@ def getLevelUps(heroId, order):
 
 def getLifeEvents(heroId, order):
     result = []
-    heroEvents = ('darkSummonSacrifice','HeroClaimed','crystalvaleRewardPJ','crystalvaleStatUpPJ','gen0rerollStatUp','geneRerollStatUp')
+    heroEvents = ('darkSummonSacrifice','HeroClaimed','crystalvaleRewardPJ','crystalvaleStatUpPJ','gen0rerollStatUp','geneRerollStatUp','HeroTranscended')
     if order == 'desc':
         orderStr = 'ORDER BY blockTimestampStart DESC'
     else:
@@ -252,6 +252,7 @@ def getEquips(heroId, order):
 
 def getPetLifeEvents(petId, order):
     result = []
+    petEvents = ('CompletedPetExchange','PetTranscended')
     if order == 'desc':
         orderStr = 'ORDER BY blockTimestampStart DESC'
     else:
@@ -259,7 +260,7 @@ def getPetLifeEvents(petId, order):
     con = aConn()
     with con:
         with con.cursor() as cur:
-            cur.execute('SELECT network, txHash, blockNumber, owner, blockTimestamp, eventType, eventData AS eggType from events WHERE heroId=%s AND eventType=%s ORDER BY blockTimestamp', (petId,'CompletedPetExchange'))
+            cur.execute('SELECT network, txHash, blockNumber, owner, blockTimestamp, eventType, eventData AS eggType from events WHERE heroId=%s AND eventType IN %s ORDER BY blockTimestamp', (petId, petEvents))
             result = cur.fetchall()
             cur.execute('SELECT network, txHashCrack, blockNumberCrack, owner, blockTimestampCrack, \'hatch\' AS eventType, eggType, tier from hatches WHERE petId=%s ORDER BY blockTimestampCrack', (petId,))
             sresult = cur.fetchall()
